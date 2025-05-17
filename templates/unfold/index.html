@@ -1,0 +1,23 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>Welcome to the Admin Dashboard</h1>
+    <p>Manage your app here.</p>
+
+    <div class="app-list">
+        {% for app in app_list %}
+        <div class="app-item">
+            <h2>{{ app.name }}</h2>
+            <ul>
+                {% for model in app.models %}
+                <li>
+                    <a href="{{ model.admin_url }}">{{ model.name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

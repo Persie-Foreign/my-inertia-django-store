@@ -1,0 +1,375 @@
+// src/pages/ProductDetail.jsx
+
+import { useParams } from 'react-router-dom';
+import { allProducts } from '../../components/products';
+import React, {useEffect, useRef, useState} from 'react';
+import ShopSidebar from '../../components/ShopSidebar.jsx';
+import { useCart } from '../../components/CartContext.jsx';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import SwiperCore from 'swiper';
+import photos from "../../components/photo.jsx";
+
+export default function ProductDetail({ setIsCartOpen, isCartOpen }) {
+    const { id } = useParams();
+    const product = allProducts.find(p => p.id === parseInt(id));
+
+    if (!product) {
+        return <p className="text-center mt-10 text-xl text-gray-500">Product not found.</p>;
+    }
+
+    const { cart, setCart } = useCart();
+
+    const cartItem = cart.find(item => item.id === product.id);
+    const quantityInCart = cartItem ? cartItem.quantity : 0;
+
+    const handleAddToCart = (product) => {
+        setCart(prevCart => {
+            const existingProduct = prevCart.find(item => item.id === product.id);
+            if (existingProduct) {
+                return prevCart.map(item =>
+                    item.id === product.id
+                        ? { ...item, quantity: item.quantity + 1 }
+                        : item
+                );
+            } else {
+                return [...prevCart, { ...product, quantity: 1, size: '' }];
+            }
+        });
+        setIsCartOpen(true);
+    };
+
+    const handleIncrementQuantity = () => {
+        if (cartItem) {
+            setCart(prevCart =>
+                prevCart.map(item =>
+                    item.id === product.id
+                        ? { ...item, quantity: item.quantity + 1 }
+                        : item
+                )
+            );
+        } else {
+            setCart(prevCart => [...prevCart, { ...product, quantity: 1, size: '' }]);
+        }
+    };
+
+    const handleDecrementQuantity = () => {
+        if (cartItem && cartItem.quantity > 1) {
+            setCart(prevCart =>
+                prevCart.map(item =>
+                    item.id === product.id
+                        ? { ...item, quantity: item.quantity - 1 }
+                        : item
+                )
+            );
+        } else if (cartItem && cartItem.quantity === 1) {
+            setCart(prevCart => prevCart.filter(item => item.id !== product.id));
+        }
+    };
+
+    const handleRemoveFromCart = (id) => {
+        setCart(prevCart => prevCart.filter(item => item.id !== id));
+    };
+
+    const handleCloseCart = () => {
+        setIsCartOpen(false);
+    };
+
+    useEffect(() => {
+        document.body.style.overflow = isCartOpen ? 'hidden' : '';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isCartOpen]);
+
+    const [selectedImage, setSelectedImage] = useState(product.image);
+
+    const variants = {
+        enter: { x: 300, opacity: 0 },
+        center: { x: 0, opacity: 1 },
+        exit: { x: -300, opacity: 0 },
+    };
+
+    const [isOpen, setIsOpen] = useState(false);
+
+    SwiperCore.use([Navigation]);
+
+    const [activeIndex, setActiveIndex] = useState(0);
+    const swiperRef = useRef(null);
+
+    return (
+        <div>
+            <div className="flex flex-col md:flex-row max-w-7xl mx-auto px-6 py-10 bg-white mt-20">
+                <div className="md:w-1/2 p-4 mr-[-3rem] w-full">
+                    <div className="relative w-[30rem] h-[30rem] bg-transparent">
+                        <AnimatePresence mode="wait">
+                            <motion.img
+                                key={selectedImage}
+                                src={selectedImage}
+                                alt={product.name}
+                                variants={variants}
+                                initial="enter"
+                                animate="center"
+                                exit="exit"
+                                transition={{
+                                    type: 'tween',
+                                    ease: 'easeInOut',
+                                    duration: 0.3,
+                                }}
+                                className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg object-contain"
+                                style={{ cursor: "crosshair" }}
+                            />
+                        </AnimatePresence>
+                    </div>
+
+                    <div className="flex space-x-2 mt-4 cursor-pointer">
+                        {(product.images && product.images.length > 0 ? product.images : [product.image]).map((img, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setSelectedImage(img)}
+                                className={`rounded p-1 cursor-pointer transition border ${
+                                    selectedImage === img ? 'border-black' : 'border-transparent'
+                                }`}
+                            >
+                                <img
+                                    src={img}
+                                    alt={`Thumbnail ${index}`}
+                                    className="w-20 h-20 object-cover rounded"
+                                />
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="md:w-1/2 p-4">
+                    <h1 className="text-3xl font-extrabold text-gray-900 mb-2">{product.name}</h1>
+                    <div className="text-2xl font-bold text-gray-800 mb-6">{product.price}</div>
+
+                    <div className="flex items-center mb-4">
+                        <div className="flex text-yellow-400 mr-2">
+                            {[1, 2, 3, 4, 5].map((_, index) => <span key={index}>★</span>)}
+                        </div>
+                        <span className="text-gray-600 ml-2">{product.reviews} Reviews</span>
+                    </div>
+
+                    <p className="text-gray-700 mb-8">{product.description}</p>
+                    <p className="text-gray-700 mb-8">* This set is only available for purchase in CAMEROON.</p>
+
+                    <div className="mt-3 flex justify-between items-center mb-6">
+                        <div className="flex items-center">
+                            <button className="border border-gray-300 px-2 py-1" onClick={handleDecrementQuantity} disabled={quantityInCart === 0}>-</button>
+                            <span className="px-2 py-1 mx-2">{quantityInCart}</span>
+                            <button className="border border-gray-300 px-2 py-1" onClick={handleIncrementQuantity}>+</button>
+                        </div>
+                    </div>
+
+                    <button
+                        aria-label="Add to cart"
+                        className="w-full relative border py-2 text-center uppercase font-bold overflow-hidden group add-to-cart-btn cursor-pointer"
+                        onClick={() => handleAddToCart(product)}
+                    >
+                        <span className="relative z-10 transition-colors duration-300 group-hover:text-white">Add to cart</span>
+                        <span className="absolute inset-0 bg-black transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
+                    </button>
+
+                    <div className="mt-10 border-b border-gray-300"></div>
+                </div>
+
+                <ShopSidebar
+                    isOpen={isCartOpen}
+                    onClose={handleCloseCart}
+                    cart={cart}
+                    setCart={setCart}
+                    handleRemoveFromCart={handleRemoveFromCart}
+                />
+            </div>
+
+            {/* Complete The Set Section (unchanged) */}
+            <section className="max-w-7xl md:w-1/2 ms-auto px-4 py-10 -mt-20">
+                <h2 className="text-2xl font-bold text-start mb-8">Complete The Set</h2>
+                <div className="flex flex-col items-center md:justify-center gap-8 border-b pb-8 border-gray-300">
+                    {/* Product 1 */}
+                    <div className="flex md:flex-row items-center mb-8 md:mb-0 md:mr-8">
+                        <div className="w-32 h-32 md:w-40 md:h-40 flex-shrink-0">
+                            <img src="/src/assets/images/dev4.jpg" alt="Product 1" className="w-full h-full object-cover rounded" />
+                        </div>
+                        <div className="ml-0 md:ml-8">
+                            <h3 className="text-lg font-semibold mb-2">Skin Recovery Duo</h3>
+                            <div className="flex items-center mb-2">
+                                <span className="text-green-600 font-medium">$39.90</span>
+                                <span className="text-gray-400 ml-2 line-through">$42.00</span>
+                            </div>
+                        </div>
+                        <button className="ml-0 md:ml-8 bg-black text-white px-6 py-3 font-medium">ADD TO CART</button>
+                    </div>
+
+                    {/* Product 2 */}
+                    <div className="flex md:flex-row items-center">
+                        <div className="w-32 h-32 md:w-40 md:h-40 flex-shrink-0">
+                            <img src="/src/assets/images/dev5.jpg" alt="Product 2" className="w-full h-full object-cover rounded" />
+                        </div>
+                        <div className="ml-0 md:ml-8">
+                            <h3 className="text-lg font-semibold mb-2">Glass Skin Essential Set</h3>
+                            <div className="flex items-center mb-2">
+                                <span className="text-green-600 font-medium">$71.90</span>
+                                <span className="text-gray-400 ml-2 line-through">$102.70</span>
+                            </div>
+                        </div>
+                        <button className="ml-0 md:ml-8 bg-black text-white px-6 py-3 font-medium">ADD TO CART</button>
+                    </div>
+                </div>
+
+                {/* How to Use Section (unchanged) */}
+                <div className="border-b border-gray-200 mt-4">
+                    <div className="flex justify-between items-center py-4 px-6 cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
+                        <h3 className="text-lg font-medium text-gray-900">How To Use</h3>
+                        <div className="text-gray-500 transition-transform duration-300">
+                            {isOpen ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                            )}
+                        </div>
+                    </div>
+                    {isOpen && (
+                        <div className="p-4">
+                            <p className="text-gray-700">{product.uses}</p>
+                        </div>
+                    )}
+                </div>
+            </section>
+
+            {/* Customer Photos Carousel - FIXED */}
+            <section className="max-w-7xl mx-auto px-4 py-8">
+                <div className="flex flex-col md:flex-row">
+                    <div className="md:w-[36%] p-4 mr-8">
+                        <div className="flex items-center mb-8">
+                            <h3 className="text-2xl font-bold text-gray-900 mr-4">4.7</h3>
+                            <div className="flex text-yellow-400 mr-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <svg className="w-4 h-4 text-green-800" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.97a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.97c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.286-3.97a1 1 0 00-.364-1.118L2.045 9.397c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.286-3.97z" />
+                                    </svg>
+                                ))}
+                            </div>
+                            <span className="text-gray-500">Based on 1,571 reviews</span>
+                        </div>
+
+                        {/* Rating distribution */}
+                        <div className="space-y-2">
+                            {[5, 4, 3, 2, 1].map((rating) => (
+                                <div key={rating} className="flex items-center">
+                                    <span className="w-12 text-gray-500 flex items-center space-x-1">
+                                      <span>{rating}</span>
+                                      <svg className="w-4 h-4 text-green-800" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.97a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.97c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.286-3.97a1 1 0 00-.364-1.118L2.045 9.397c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.286-3.97z" />
+                                      </svg>
+                                    </span>
+                                    <div className="flex-grow bg-gray-200 h-2.5 rounded-full">
+                                        <div
+                                            className="bg-gray-400 h-2.5 rounded-full"
+                                            style={{ width: rating === 5 ? '80%' : rating === 4 ? '25%' : rating === 3 ? '3%' : rating === 2 ? '0.06%' : '0.5%' }}
+                                        />
+                                    </div>
+                                    <span className="ml-4 text-gray-500">
+                                    {rating === 5 ? '1.1k' : rating === 4 ? '395' : rating === 3 ? '43' : rating === 2 ? '1' : '8'}
+                                </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="md:w-[64%] p-4 relative group">
+                        <style>
+                            {`
+                              .mySwiper .swiper-button-next,
+                              .mySwiper .swiper-button-prev {
+                                width: 24px;
+                                height: 24px;
+                                background-color: rgba(0,0,0,0.5);
+                                border-radius: 9999px;
+                                transition: opacity 0.3s;
+                              }
+                    
+                              .mySwiper .swiper-button-next::after,
+                              .mySwiper .swiper-button-prev::after {
+                                font-size: 12px;
+                                color: white;
+                              }
+                    
+                              .mySwiper .swiper-button-next {
+                                opacity: 0;
+                              }
+                    
+                              .group:hover .mySwiper .swiper-button-next {
+                                opacity: 1;
+                              }
+                    
+                              .mySwiper .swiper-button-prev {
+                                opacity: 0;
+                              }
+                    
+                              .group:hover .mySwiper.show-prev .swiper-button-prev {
+                                opacity: 1;
+                              }
+                            `}
+                        </style>
+
+                        <div className="mb-8 flex flex-row space-x-4">
+                            <h3 className="text-2xl font-bold text-gray-900">97%</h3>
+                            <p className="text-gray-500">would recommend these products</p>
+                        </div>
+
+                        <Swiper
+                            onSwiper={(swiper) => (swiperRef.current = swiper)}
+                            onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
+                            slidesPerView={8}
+                            spaceBetween={8}
+                            slidesPerGroup={1}
+                            navigation
+                            modules={[Navigation]}
+                            breakpoints={{
+                                0: { slidesPerView: 2 },
+                                640: { slidesPerView: 3 },
+                                768: { slidesPerView: 4 },
+                                1024: { slidesPerView: 6 },
+                            }}
+                            className={`mySwiper ${activeIndex > 0 ? 'show-prev' : ''}`}
+                        >
+                            {photos.map((photo, index) => (
+                                <SwiperSlide key={index}>
+                                    <img
+                                        src={photo}
+                                        alt={`Customer photo ${index + 1}`}
+                                        className="w-full h-40 object-cover"
+                                    />
+                                </SwiperSlide>
+                            ))}
+                        </Swiper>
+                    </div>
+                </div>
+
+                <div className="mt-2 border-b border-gray-200">
+                    <div className="flex">
+                        <button className="py-4 px-6 text-gray-900 font-medium border-b-2 border-transparent hover:border-gray-300">Reviews (1,571)</button>
+                        <button className="py-4 px-6 text-gray-500 font-medium border-b-2 border-transparent hover:border-gray-300">Questions (19)</button>
+                    </div>
+                </div>
+            </section>
+            <button className="bg-gray-100 text-black p-2 text-sm border border-gray-300 -mt-4 mr-8 font-bold w-[10rem] flex items-center justify-center gap-2 mb-3 ms-auto">
+                <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 3.487a2.253 2.253 0 113.182 3.192L7.5 19.5l-4 1 1-4L16.862 3.487z" />
+                </svg>
+                Write a review
+            </button>
+        </div>
+    );
+}

@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>{% trans "Sign up" %}</h1>
+<form method="post" action="{% url 'account_signup' %}">
+    {% csrf_token %}
+    {{ form.username.label_tag }} {{ form.username }}
+    {{ form.email.label_tag }}    {{ form.email }}
+    {{ form.password1.label_tag }} {{ form.password1 }}
+    {{ form.password2.label_tag }} {{ form.password2 }}
+
+    {# New role field: #}
+    {{ form.role.label_tag }}      {{ form.role }}
+
+    <button type="submit">{% trans "Sign up" %}</button>
+</form>
+<p>
+    {% trans "Already have an account?" %}
+    <a href="{% url 'account_login' %}">{% trans "Log in" %}</a>
+</p>
+{% endblock %}

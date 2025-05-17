@@ -1,0 +1,81 @@
+// src/components/CurrencyContext.jsx
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+const CurrencyContext = createContext();
+
+export const currencies = [
+    {
+        country: 'United States',
+        code: 'USD',
+        symbol: '$',
+        icon: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/flags/4x3/us.svg',
+    },
+    {
+        country: 'Canada',
+        code: 'CAD',
+        symbol: '$',
+        icon: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/flags/4x3/ca.svg',
+    },
+    {
+        country: 'Cameroon',
+        code: 'XAF',
+        symbol: 'FCFA',
+        icon: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/flags/4x3/cm.svg',
+    },
+    {
+        country: 'France',
+        code: 'EUR',
+        symbol: '€',
+        icon: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/flags/4x3/fr.svg',
+    },
+];
+
+export const CurrencyProvider = ({ children }) => {
+    const [selectedCurrency, setSelectedCurrency] = useState(currencies[0]); // default USD
+    const [exchangeRates, setExchangeRates] = useState({ USD: 1 }); // default rates
+
+    // Fetch live rates on mount
+    useEffect(() => {
+        const fetchRates = async () => {
+            try {
+                const response = await fetch('https://api.exchangerate.host/latest?base=USD');
+                const data = await response.json();
+
+                // Only keep rates we care about (USD, CAD, XAF, EUR)
+                const filteredRates = {};
+                ['USD', 'CAD', 'XAF', 'EUR'].forEach(code => {
+                    filteredRates[code] = data.rates[code];
+                });
+
+                setExchangeRates(filteredRates);
+            } catch (error) {
+                console.error('Failed to fetch exchange rates:', error);
+                // fallback to defaults if fetch fails
+                setExchangeRates({
+                    USD: 1,
+                    CAD: 1.36,
+                    XAF: 610,
+                    EUR: 0.93
+                });
+            }
+        };
+
+        fetchRates();
+        const interval = setInterval(fetchRates, 10 * 60 * 1000); // refresh every 10 min
+
+        return () => clearInterval(interval);
+    }, []);
+
+    const convertAmount = (amountInUSD, currencyCode) => {
+        const rate = exchangeRates[currencyCode] || 1;
+        return amountInUSD * rate;
+    };
+
+    return (
+        <CurrencyContext.Provider value={{ selectedCurrency, setSelectedCurrency, currencies, convertAmount }}>
+            {children}
+        </CurrencyContext.Provider>
+    );
+};
+
+export const useCurrency = () => useContext(CurrencyContext);

@@ -1,0 +1,95 @@
+import React from 'react';
+
+const Footer = () => {
+    return (
+        <footer className="bg-white py-10 px-5 border-t">
+            <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-5 gap-2">
+                    {/* Newsletter Section */}
+                    <div>
+                        <h3 className="text-lg font-bold mb-4">Stay In Touch With DEVSHOP♥</h3>
+                        <p className="text-gray-600 mb-5">
+                            Stay in the loop and be the first to get exclusive discounts, new product updates, and more—let's be besties!
+                        </p>
+                        <div className="flex flex-col">
+                            <input
+                                type="email"
+                                placeholder="E-mail"
+                                className="border p-2 mb-2"
+                            />
+                            <button className="bg-black text-white p-2 text-center">
+                                SUBSCRIBE
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Company Links */}
+                    <div className=" ml-[2.5rem]">
+                        <h3 className="text-lg font-bold mb-4">COMPANY</h3>
+                        <ul>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">About Us</a></li>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">Contact Us</a></li>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">Adverse events</a></li>
+                        </ul>
+                    </div>
+
+                    {/* Shop Links */}
+                    <div>
+                        <h3 className="text-lg font-bold mb-4">SHOP</h3>
+                        <ul>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">All</a></li>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">Bestsellers</a></li>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">By Category</a></li>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">By Skin Concern</a></li>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">By Ingredients</a></li>
+                        </ul>
+                    </div>
+
+                    {/* Customer Care Links */}
+                    <div>
+                        <h3 className="text-lg font-bold mb-4">CUSTOMER CARE</h3>
+                        <ul>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">FAQ</a></li>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">Shipping Policy</a></li>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">Return Policy</a></li>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">Privacy Policy</a></li>
+                            <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">Terms of Service</a></li>
+                        </ul>
+                    </div>
+
+                    {/* Company Info */}
+                    <div>
+                        <h3 className="text-lg font-bold mb-4">DEVSHOP INC.</h3>
+                        <p className="text-gray-600 mb-5">
+                            222 Pacific Coast Hwy, #10-145, El Segundo, CA 90245, United States
+                        </p>
+                        <button className="bg-purple-600 text-white px-4 py-2 rounded-full flex items-center mb-5">
+                            <span className="mr-2"><i className="far fa-heart"></i></span>
+                            Follow on shop
+                        </button>
+                    </div>
+                </div>
+
+                {/* Social Media Icons */}
+                <div className="flex justify-start mt-10 space-x-5">
+                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                        <i className="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                        <i className="fab fa-instagram text-xl"></i>
+                    </a>
+                    <a href="#" className="text-gray-600 hover:text-gray-800">
+                        <i className="fab fa-tiktok text-xl"></i>
+                    </a>
+                </div>
+
+                {/* Copyright */}
+                <div className="mt-10 text-gray-600 text-sm">
+                    © 2025 - Devshop CAMEROON Powered by Developers
+                </div>
+            </div>
+        </footer>
+    );
+};
+
+export default Footer;

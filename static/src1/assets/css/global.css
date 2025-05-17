@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+
+
+.group:hover span::before {
+    opacity: 1;
+}
+
+.mega-menu-container {
+    width: 80%;
+}
+
+

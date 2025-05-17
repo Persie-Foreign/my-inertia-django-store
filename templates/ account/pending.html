@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 3rem auto;">
+    <h1>{% trans "Approval Pending" %}</h1>
+    <p>
+        {% trans "Thank you for confirming your email address." %}
+        {% trans "Your account is now awaiting approval by an administrator." %}
+    </p>
+    <p>
+        {% trans "You will receive an email once your account has been approved." %}
+    </p>
+    <a href="{% url 'account_login' %}">{% trans "Back to Log In" %}</a>
+</div>
+{% endblock %}

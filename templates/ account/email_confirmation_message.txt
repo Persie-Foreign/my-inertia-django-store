@@ -1,0 +1,11 @@
+Hello {{ user.username }},
+
+Thank you for registering at DevShop!
+
+Please confirm your email address by clicking the link below:
+
+{{ activate_url }}
+
+If you did not register with us, simply ignore this email.
+
+— The DevShop Team

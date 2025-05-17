@@ -1,0 +1,26 @@
+// src/photo.jsx
+
+const photos = [
+    '/src/assets/photo.jpg',
+    '/src/assets/photo.jpg',
+    '/src/assets/photo.jpg',
+    '/src/assets/photo.jpg',
+    '/src/assets/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+    '/src/assets/images/photo.jpg',
+];
+
+export default photos;
