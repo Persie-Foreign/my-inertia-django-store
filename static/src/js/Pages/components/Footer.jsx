@@ -4,7 +4,7 @@ const Footer = () => {
     return (
         <footer className="bg-white py-10 px-5 border-t">
             <div className="max-w-7xl mx-auto">
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                     {/* Newsletter Section */}
                     <div>
                         <h3 className="text-lg font-bold mb-4">Stay In Touch With DEVSHOP♥</h3>
@@ -24,7 +24,7 @@ const Footer = () => {
                     </div>
 
                     {/* Company Links */}
-                    <div className=" ml-[2.5rem]">
+                    <div className="sm:ml-10">
                         <h3 className="text-lg font-bold mb-4">COMPANY</h3>
                         <ul>
                             <li className="mb-2"><a href="#" className="text-gray-600 hover:text-gray-800">About Us</a></li>

@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import AppLayout from './Pages/components/AppLayout.jsx';
 import '../css/app.css';
 import { CartProvider } from './Pages/components/CartContext.jsx';
+import {CurrencyProvider} from "./Pages/components/CurrencyContext.jsx";
 
 createInertiaApp({
     resolve: (name) => {
@@ -26,8 +27,11 @@ createInertiaApp({
         //    page.layout(<Page />) for each page under the hood.
         const root = createRoot(el);
         root.render(
-            <CartProvider>
-                <App {...props} />
-            </CartProvider>);
+            <CurrencyProvider>
+                <CartProvider>
+                    <App {...props} />
+                </CartProvider>
+            </CurrencyProvider>
+        );
     },
 });

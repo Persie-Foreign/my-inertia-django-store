@@ -1,9 +1,12 @@
 import React from 'react';
+import { Head } from '@inertiajs/react';
 import CartSection from './CartSection.jsx';
 
 const CartSidebar = ({ isOpen, onClose }) => {
     return (
         <>
+            <Head title="Cart" />
+
             {/* Backdrop */}
             {isOpen && (
                 <div

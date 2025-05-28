@@ -8,7 +8,7 @@ import Home from "./views/home/Home";
 import Shop from "./views/shop/Shop";
 import Login from "./views/login/Login";
 import CheckoutSection from "./components/CheckoutSection";
-import BrandStory from "./views/about/BrandStory.jsx";
+import BrandStory from "../src/js/Pages/BrandStory.jsx";
 import ProductDetail from './views/shop/ProductDetail';
 import { CurrencyProvider } from "./components/CurrencyContext.jsx";
 import { useCart } from "./components/CartContext.jsx";

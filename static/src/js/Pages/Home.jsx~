@@ -1,0 +1,218 @@
+// Updated Home.jsx - complete and fixed
+
+import React, { useState, useEffect } from 'react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { useCart } from './components/CartContext.jsx';
+import ShopSidebar from './components/ShopSidebar.jsx';
+import ProductTabs from './components/ProductTabs.jsx';
+import TestimonialCarousel from './components/TestimonialCarousel.jsx';
+import PromoSection from './components/PromoSection.jsx';
+import BrandStorySection from './components/BrandStorySection.jsx';
+import { currencies, useCurrency } from "./components/CurrencyContext.jsx";
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import toast from 'react-hot-toast';
+
+function useResponsiveChunkSize() {
+    const [chunkSize, setChunkSize] = useState(4);
+    useEffect(() => {
+        const updateChunkSize = () => {
+            const width = window.innerWidth;
+            if (width < 640) setChunkSize(1);
+            else if (width < 768) setChunkSize(2);
+            else if (width < 1024) setChunkSize(3);
+            else setChunkSize(4);
+        };
+        updateChunkSize();
+        window.addEventListener('resize', updateChunkSize);
+        return () => window.removeEventListener('resize', updateChunkSize);
+    }, []);
+    return chunkSize;
+}
+
+export default function Home({ setIsCartOpen, isCartOpen }) {
+    const { highlightedProducts = [], productsByCategory = {} } = usePage().props;
+
+    const slides = [
+        { image: '/static/images/dev8.png', heading: 'Glowing Skin Starts Here', subheading: 'Discover our premium skincare collection for every skin type.', buttonText: 'Shop Now', href: '/products' },
+        { image: '/static/images/dev4.jpg', heading: 'Professional Makeup', subheading: 'Elevate your look with our high‑quality makeup range.', buttonText: 'Explore', href: '/products' },
+        { image: '/static/images/dev5.jpg', heading: 'Signature Fragrances', subheading: 'Find your signature scent among our exclusive lineup.', buttonText: 'Discover', href: '/products' },
+        { image: '/static/images/dev7.jpg', heading: 'Limited‑Edition Sets', subheading: 'Shop seasonal bundles before they sell out.', buttonText: 'Browse Sets', href: '/products' },
+    ];
+
+    const slideDuration = 4000;
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const [busy, setBusy] = useState(false);
+
+    useEffect(() => {
+        if (busy) return;
+        const timer = setTimeout(() => {
+            setCurrentSlide((s) => (s + 1) % slides.length);
+        }, slideDuration);
+        return () => clearTimeout(timer);
+    }, [currentSlide, busy]);
+
+    const goToSlide = (i) => {
+        if (i === currentSlide) return;
+        setBusy(true);
+        setCurrentSlide(i);
+        setTimeout(() => setBusy(false), 50);
+    };
+
+    const responsiveChunkSize = useResponsiveChunkSize();
+    const chunks = [];
+    for (let i = 0; i < highlightedProducts.length; i += responsiveChunkSize) {
+        chunks.push(highlightedProducts.slice(i, i + responsiveChunkSize));
+    }
+
+    const [chunkIndex, setChunkIndex] = useState(0);
+    const [hovered, setHovered] = useState(false);
+
+    useEffect(() => {
+        if (chunkIndex >= chunks.length) setChunkIndex(0);
+    }, [responsiveChunkSize, highlightedProducts]);
+
+    const nextChunk = () => chunkIndex < chunks.length - 1 && setChunkIndex(chunkIndex + 1);
+    const prevChunk = () => chunkIndex > 0 && setChunkIndex(chunkIndex - 1);
+
+    let cart = [], setCart = () => {};
+    try { ({ cart, setCart } = useCart()); } catch {}
+
+    const handleAddToCart = (product) => {
+        setCart(prevCart => {
+            const totalQuantity = prevCart.reduce((sum, item) => sum + item.quantity, 0);
+            if (totalQuantity >= 10) {
+                toast.error('Cart limit reached. You can only have up to 10 items.');
+                return prevCart;
+            }
+            const existing = prevCart.find(i => i.id === product.id);
+            if (existing) {
+                return prevCart.map(i =>
+                    i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+                );
+            } else {
+                return [...prevCart, {
+                    id: product.id,
+                    title: product.title,
+                    price: product.price,
+                    image_url: product.image1 || product.image || (product.images?.[0]) || '',
+                    quantity: 1,
+                    size: '',
+                }];
+            }
+        });
+        setIsCartOpen(true);
+    };
+
+    const handleRemoveFromCart = id => setCart(c => c.filter(x => x.id !== id));
+
+    const { selectedCurrency, setSelectedCurrency, convertAmount } = useCurrency();
+    useEffect(() => {
+        document.body.style.overflow = isCartOpen ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+    }, [isCartOpen]);
+
+    useEffect(() => {
+        const saved = localStorage.getItem('currency');
+        const found = currencies.find(c => c.code === saved);
+        if (found) setSelectedCurrency(found);
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem('currency', selectedCurrency.code);
+    }, [selectedCurrency]);
+
+    return (
+        <>
+            <Head title="Home" />
+
+            {/* Hero Section */}
+            <section className="relative w-full h-screen overflow-hidden">
+                {slides.map((s, i) => (
+                    <img key={i} src={s.image} alt={s.heading}
+                         className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${i === currentSlide ? 'opacity-100' : 'opacity-0'}`} />
+                ))}
+                <div className="absolute inset-0 bg-opacity-30 flex flex-col justify-center items-start px-8 md:px-20">
+                    <h1 className="text-white text-4xl md:text-6xl font-bold mb-4">{slides[currentSlide].heading}</h1>
+                    <p className="text-white text-lg md:text-xl mb-6 max-w-lg">{slides[currentSlide].subheading}</p>
+                    <Link href={slides[currentSlide].href} className="bg-white text-black px-6 py-3 font-semibold hover:bg-gray-200">{slides[currentSlide].buttonText}</Link>
+                </div>
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-3">
+                    {slides.map((_, i) => (
+                        <button key={i} onClick={() => goToSlide(i)} className="relative w-4 h-4 focus:outline-none">
+                            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 20 20">
+                                <circle cx="10" cy="10" r="8" fill="transparent" stroke="#fff" strokeWidth="2" opacity="0.3" />
+                                {i === currentSlide && (
+                                    <circle cx="10" cy="10" r="8" fill="transparent" stroke="#fff" strokeWidth="2" strokeDasharray={50.24} strokeDashoffset={50.24} style={{ animation: `progress ${slideDuration}ms linear forwards` }} />
+                                )}
+                            </svg>
+                            <span className={`absolute inset-0 m-1 rounded-full transition-colors ${i === currentSlide ? 'bg-white' : 'bg-gray-400 bg-opacity-50'}`} />
+                        </button>
+                    ))}
+                    <style>{`@keyframes progress { to { stroke-dashoffset: 0; } }`}</style>
+                </div>
+            </section>
+
+            {/* Sections */}
+            <section className="mt-20 max-w-7xl mx-auto px-4 relative" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+                <div className="relative flex items-center justify-center mb-6">
+                    <h2 className="text-2xl sm:text-4xl font-bold absolute left-1/2 transform -translate-x-1/2">BEST SELLERS</h2>
+                    <Link href="/products" className="ml-auto text-green-600 font-semibold hover:underline z-10">View All →</Link>
+                </div>
+                <div className="relative">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                        {chunks[chunkIndex]?.map(p => (
+                            <div key={p.id} className="bg-white rounded-lg shadow hover:shadow-lg overflow-hidden relative">
+                                <div className="absolute top-2 left-2 flex flex-col space-y-1 z-10 px-2">
+                                    {p.is_new && <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded">NEW</span>}
+                                    {p.is_best && <span className="bg-black text-white text-xs px-2 py-1 rounded">BEST</span>}
+                                    {p.save_amount != null && <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">SAVE FCFA{p.save_amount}</span>}
+                                </div>
+                                <Link href={`/products/${p.slug}`} className="block group relative overflow-hidden h-48 w-full">
+                                    <img src={p.image1} alt={p.title} className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0" />
+                                    <img src={p.image2} alt={`${p.title} hover`} className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                                </Link>
+                                <div className="p-4">
+                                    <Link href={`/products/${p.slug}`} className="block text-xl font-semibold mb-2">{p.title}</Link>
+                                    <div className="flex items-center text-sm text-gray-600 mb-2">
+                                        {[...Array(5)].map((_, i) => (
+                                            <span key={i} className={i < Math.round(p.rating) ? "text-green-500 mr-1" : "text-gray-300 mr-1"}>★</span>
+                                        ))}
+                                        <span>{p.reviews_count} Reviews</span>
+                                    </div>
+                                    <div className="flex items-baseline justify-center mb-4">
+                                        <span className="text-xl font-bold">{selectedCurrency.symbol}{convertAmount(p.price).toFixed(2)}</span>
+                                        {p.original_price && <span className="ml-2 text-gray-400 line-through">{selectedCurrency.symbol}{convertAmount(p.original_price).toFixed(2)}</span>}
+                                    </div>
+                                    <button onClick={() => handleAddToCart(p)} className="w-full relative border py-2 text-center uppercase font-bold overflow-hidden group add-to-cart-btn">
+                                        <span className="relative z-10 transition-colors duration-300 group-hover:text-white">Add to cart</span>
+                                        <span className="absolute inset-0 bg-black transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    {hovered && chunkIndex > 0 && <button onClick={prevChunk} className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black text-white p-3 z-50 rounded-full shadow-lg"><ChevronLeftIcon className="h-5 w-5" /></button>}
+                    {hovered && chunkIndex < chunks.length - 1 && <button onClick={nextChunk} className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black text-white p-3 z-50 rounded-full shadow-lg"><ChevronRightIcon className="h-5 w-5" /></button>}
+                </div>
+            </section>
+
+            <ShopSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} setCart={setCart} handleRemoveFromCart={handleRemoveFromCart} />
+
+            <section className="mt-20 max-w-7xl mx-auto px-4">
+                <div className="relative flex items-center justify-center mb-6">
+                    <h2 className="text-2xl sm:text-4xl font-bold absolute left-1/2 transform -translate-x-1/2">PRODUCT LINES</h2>
+                    <Link href="/products" className="ml-auto text-green-600 font-semibold hover:underline z-10">View All →</Link>
+                </div>
+                <ProductTabs isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />
+            </section>
+
+            <section className="mt-20 max-w-7xl mx-auto px-4">
+                <h2 className="text-4xl font-bold mb-6">AS SEEN ON SOCIAL</h2>
+                <TestimonialCarousel />
+            </section>
+
+            <section className="mt-2 max-w-7xl mx-auto px-4"><PromoSection /></section>
+            <section className="mt-2 max-w-7xl mx-auto px-4 mb-20"><BrandStorySection /></section>
+        </>
+    );
+}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom'; // Import NavLink
 import '../assets/css/global.css'; // Ensure Tailwind CSS is included in your global CSS
-import Filter from '../pages/Filter';
+import Filter from '../../src/js/Pages/components/Filter';
 import SortDropdown from '../pages/SortDropdown';
 import Previewpage from '../pages/Previewpage';
 

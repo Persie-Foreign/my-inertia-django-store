@@ -5,7 +5,7 @@ import App from './App.jsx';
 import ShopAll from './pages/ShopAll.jsx';
 import Previewpage from './pages/Previewpage.jsx';
 import Home from './pages/Home.jsx';
-import Filter from './pages/Filter.jsx';
+import Filter from '../src/js/Pages/components/Filter.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import DashboardUser from './pages/DashboardUser.jsx';
 import ManageOrders from './pages/ManageOrders.jsx';

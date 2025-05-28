@@ -1,21 +1,33 @@
 from inertia import render
+from django.http import JsonResponse, HttpResponseForbidden
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
+from django.http        import JsonResponse, HttpResponseBadRequest
+from django.contrib.auth.decorators import login_required
+from .models           import Product, Review, ReviewMedia
+from django.db.models import Count
+
 from django.shortcuts import get_object_or_404
-from .models import Product, Category
+from .models import Product
+
 
 
 def home(request):
     """
     Renders the homepage with best-seller listing.
     """
-    qs = Product.objects.filter(is_best=True, images__isnull=False).distinct().prefetch_related('images','reviews')
+    qs = Product.objects.filter(is_best=True, images__isnull=False).distinct().prefetch_related('images', 'reviews')
     products = []
     for p in qs:
+        images = [img.image.url for img in p.images.all()]
         products.append({
             'id':               p.id,
-            'name':             p.title,
+            'title':            p.title,
             'slug':             p.slug,
-            'image_url':        p.images.first().image.url,
-            'zoomed_image_url': p.images.first().image.url,
+            'image1':           p.images[0].image.url if p.images.exists() else '',
+            'image2':           p.images[1].image.url if p.images.count()>1 else (p.images[0].image.url if p.images.exists() else ''),
+            'images':           images,
             'price':            float(p.price),
             'original_price':   float(p.original_price) if p.original_price else None,
             'reviews_count':    p.reviews.count(),
@@ -23,14 +35,22 @@ def home(request):
             'is_best':          p.is_best,
             'save_amount':      p.save_amount,
         })
+
     return render(request, 'Home', { 'products': products })
+
 
 
 def product_list(request):
     """
     Renders /products/ grouped by category → parent → children.
     """
-    qs = Product.objects.filter(images__isnull=False).distinct().prefetch_related('category__parent','images','reviews')
+    qs = Product.objects.filter(images__isnull=False).distinct().prefetch_related('category__parent', 'images', 'reviews')
+
+    # 🔥 Filter by ?category= from query string if provided
+    category_filter = request.GET.get('category')
+    if category_filter:
+        qs = qs.filter(category__name__iexact=category_filter)
+
     products = []
     for p in qs:
         products.append({
@@ -72,56 +92,224 @@ def shop_all(request):
         'products': products
     })
 
+
 def product_detail(request, slug):
     """
-    Renders /products/<slug>/ with full details & reviews.
+    Renders /products/<slug>/ with full details, reviews,
+    and a list of related products in the same category.
     """
-    p = get_object_or_404(Product.objects.prefetch_related('images','reviews__author'), slug=slug)
+    # 1. Fetch the main product with its relations
+    p = get_object_or_404(
+        Product.objects
+        .select_related('category__parent', 'seller')
+        .prefetch_related('images', 'reviews__author', 'reviews__media_files'),
+        slug=slug
+    )
+
+    # 2. Helper to serialize related products
+    def serialize(prod):
+        img_url = prod.images.first().image.url if prod.images.exists() else ''
+        return {
+            'id':    prod.id,
+            'title': prod.title,
+            'slug':  prod.slug,
+            'price': float(prod.price),
+            'image': img_url,
+        }
+
+    # 3. Build related products list
+    related_qs = (
+        Product.objects
+        .filter(category=p.category)
+        .exclude(id=p.id)
+        .prefetch_related('images')[:5]
+    )
+    related_products = [serialize(rp) for rp in related_qs]
+
+    # 4. Serialize reviews
+    reviews = []
+    for r in p.reviews.all():
+        reviews.append({
+            'id':          r.id,
+            'user':        r.author.username if r.author else 'Anonymous',
+            'rating':      r.rating,
+            'title':       r.review_title,
+            'description': r.review_description,
+            'created_at':  r.created_at.isoformat(),
+            'media': [
+                {
+                    'id':   m.id,
+                    'url':  m.file.url,
+                    'type': 'video' if m.file.name.lower().endswith(('.mp4','.mov','.webm')) else 'image'
+                }
+                for m in r.media_files.all()
+            ],
+        })
+
+    # 5. Assemble payload
     data = {
-        'id':            p.id,
-        'title':         p.title,
-        'slug':          p.slug,
-        'description':   p.description,
-        'price':         float(p.price),
-        'original_price':float(p.original_price) if p.original_price else None,
-        'images':        [img.image.url for img in p.images.all()],
-        'reviews':       [{
-            'id':        r.id,
-            'author':    r.author.username,
-            'rating':    r.rating,
-            'comment':   r.comment,
-            'created_at':r.created_at.isoformat(),
-        } for r in p.reviews.all()],
+        'id':              p.id,
+        'title':           p.title,
+        'slug':            p.slug,
+        'description':     p.description,
+        'price':           float(p.price),
+        'original_price':  float(p.original_price) if p.original_price else None,
+        'images':          [img.image.url for img in p.images.all()],
+        'seller':          p.seller.username if p.seller else None,
+        'category': {
+            'name':   p.category.name,
+            'parent': p.category.parent.name if p.category.parent else None,
+        } if p.category else None,
+        'reviews':         reviews,
+        'can_review':      request.user.is_authenticated,
+        'relatedProducts': related_products,
     }
+
     return render(request, 'ProductDetail', data)
 
+# CREATE Review
+@csrf_exempt  # Use proper CSRF protection for real apps
+@login_required
+def submit_review(request, product_id):
+    if request.method != 'POST':
+        return HttpResponseBadRequest("POST only")
 
-def product_lines(request):
-    """
-    Pass Heartleaf, Rice, Peach product sets to the front end.
-    """
-    # Adjust these slugs to match your real category slugs:
-    cats = ['Heartleaf', 'Rice', 'Peach']
-    products_by_cat = {}
-    for cat in cats:
-        qs = (
-            Product.objects
-            .filter(category__name=cat, images__isnull=False)
-            .distinct()
-            .prefetch_related('images','reviews')
-        )
-        products_by_cat[cat] = [
-            {
-                'id':               p.id,
-                'title':            p.title,
-                'slug':             p.slug,
-                'image_url':        p.images.first().image.url if p.images.exists() else '',
-                'price':            float(p.price),
-                'original_price':   float(p.original_price) if p.original_price else None,
-                'reviews_count':    p.reviews.count(),
-            }
-            for p in qs
-        ]
-    return render(request, 'ProductLines', {
-        'productsByCategory': products_by_cat
+    product = get_object_or_404(Product, id=product_id)
+
+    # JSON-decode the concerns list
+    raw_concerns = request.POST.get('concerns') or '[]'
+    try:
+        concerns_list = json.loads(raw_concerns)
+    except json.JSONDecodeError:
+        concerns_list = []
+
+    review = Review.objects.create(
+        product            = product,
+        author             = request.user,
+        review_title       = request.POST.get('reviewTitle', ''),
+        review_description = request.POST.get('reviewDescription', ''),
+        email              = request.POST.get('email', ''),
+        age                = request.POST.get('age', ''),
+        skin_type          = request.POST.get('skinType', ''),
+        rating             = request.POST.get('rating'),
+        concerns           = concerns_list,
+    )
+
+    # Save each uploaded media file
+    for f in request.FILES.getlist('media'):
+        ReviewMedia.objects.create(review=review, file=f)
+
+    return JsonResponse({'message': 'Review submitted successfully!'})
+# UPDATE Review
+@csrf_exempt
+@login_required
+@require_http_methods(["POST", "PUT"])
+def update_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+
+    if review.author != request.user:
+        return HttpResponseForbidden("Not allowed")
+
+    review.rating = request.POST.get("rating", review.rating)
+    review.comment = request.POST.get("review_description", review.comment)
+    review.save()
+
+    return JsonResponse({'success': True})
+
+
+# DELETE Review
+@csrf_exempt
+@login_required
+@require_http_methods(["POST", "DELETE"])
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+
+    if review.author != request.user:
+        return HttpResponseForbidden("Not allowed")
+
+    review.delete()
+    return JsonResponse({'success': True})
+
+@login_required
+def show_review_form(request, product_id):
+    product = get_object_or_404(
+        Product.objects.prefetch_related('images'),
+        id=product_id
+    )
+
+    image_url = product.images.first().image.url if product.images.exists() else None
+
+    return render(request, 'ReviewFormSection', {
+        'product': {
+            'id': product.id,
+            'title': product.title,
+            'image': image_url,
+        }
     })
+
+@login_required
+def review_thanks(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    return render(request, 'ReviewConfirmationPage', {
+        'product': { 'id': product.id, 'title': product.title }
+    })
+
+
+def review_updated(request, product_id):
+    # 1. Fetch the reviewed product
+    product = get_object_or_404(Product, pk=product_id)
+
+    # 2. Query up to 10 other products in the same category,
+    #    ordered by descending review count.
+    related_qs = (
+        Product.objects
+        .filter(category=product.category)            # same category
+        .exclude(pk=product.pk)                       # not the same product
+        .annotate(reviews_count=Count('reviews'))     # count their reviews
+        .order_by('-reviews_count')[:10]
+        .prefetch_related('images')
+    )
+
+    # 3. Serialize for the front-end
+    products = []
+    for p in related_qs:
+        products.append({
+            'id':      p.id,
+            'title':   p.title,
+            'slug':    p.slug,
+            'image':   p.images.first().image.url if p.images.exists() else '',
+            'reviews': p.reviews_count,
+            'price':   float(p.price),
+        })
+
+    # 4. Render, passing both the single product and the list
+    return render(request, 'ReviewUpdatedPage', {
+        'product': {
+            'id':    product.id,
+            'title': product.title,
+        },
+        'products': products,
+    })
+
+def submit_review_media(request, product_id):
+    if request.method == 'POST':
+        product = get_object_or_404(Product, id=product_id)
+        user = request.user
+
+        # Get the user's review for this product
+        review = Review.objects.filter(product=product, user=user).last()
+        if not review:
+            return JsonResponse({'error': 'Review not found'}, status=404)
+
+        for uploaded_file in request.FILES.getlist('media'):
+            file_type = 'video' if uploaded_file.content_type.startswith('video') else 'image'
+            ReviewMedia.objects.create(
+                review=review,
+                file=uploaded_file,
+                type=file_type
+            )
+
+        return JsonResponse({'message': 'Media uploaded successfully'})
+
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+

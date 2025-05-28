@@ -26,13 +26,13 @@ const TestimonialCarousel = () => {
                                 muted
                                 className="w-full h-full object-cover"
                             >
-                                <source src="/src/assets/videos/vid1.mp4" type="video/mp4" />
+                                <source src="/static/videos/vid1.mp4" type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
                             <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
                                 <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
                                     <img
-                                        src="/src/assets/images/dev2.jpg"
+                                        src="/static/images/dev2.jpg"
                                         alt="Product"
                                         className="w-10 h-10 object-cover rounded"
                                     />
@@ -52,13 +52,13 @@ const TestimonialCarousel = () => {
                                 muted
                                 className="w-full h-full object-cover"
                             >
-                                <source src="/src/assets/videos/vid2.mp4" type="video/mp4" />
+                                <source src="/static/videos/vid2.mp4" type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
                             <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
                                 <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
                                     <img
-                                        src="/src/assets/images/dev2.jpg"
+                                        src="/static/images/dev2.jpg"
                                         alt="Product"
                                         className="w-10 h-10 object-cover rounded"
                                     />
@@ -78,13 +78,13 @@ const TestimonialCarousel = () => {
                                 muted
                                 className="w-full h-full object-cover"
                             >
-                                <source src="/src/assets/videos/vid3.mp4" type="video/mp4" />
+                                <source src="/static/videos/vid3.mp4" type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
                             <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
                                 <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
                                     <img
-                                        src="/src/assets/images/dev2.jpg"
+                                        src="/static/images/dev2.jpg"
                                         alt="Product"
                                         className="w-10 h-10 object-cover rounded"
                                     />
@@ -104,13 +104,13 @@ const TestimonialCarousel = () => {
                                 muted
                                 className="w-full h-full object-cover"
                             >
-                                <source src="/src/assets/videos/vid4.mp4" type="video/mp4" />
+                                <source src="/static/videos/vid4.mp4" type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
                             <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
                                 <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
                                     <img
-                                        src="/src/assets/images/dev2.jpg"
+                                        src="/static/images/dev2.jpg"
                                         alt="Product"
                                         className="w-10 h-10 object-cover rounded"
                                     />
@@ -130,13 +130,13 @@ const TestimonialCarousel = () => {
                                 muted
                                 className="w-full h-full object-cover"
                             >
-                                <source src="/src/assets/videos/vid5.mp4" type="video/mp4" />
+                                <source src="/static/videos/vid5.mp4" type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
                             <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
                                 <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
                                     <img
-                                        src="/src/assets/images/dev2.jpg"
+                                        src="/static/images/dev2.jpg"
                                         alt="Product"
                                         className="w-10 h-10 object-cover rounded"
                                     />
@@ -170,13 +170,13 @@ const TestimonialCarousel = () => {
                                 muted
                                 className="w-full h-full object-cover"
                             >
-                                <source src="/src/assets/videos/vid6.mp4" type="video/mp4" />
+                                <source src="/static/videos/vid6.mp4" type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
                             <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
                                 <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
                                     <img
-                                        src="/src/assets/images/dev2.jpg"
+                                        src="/static/images/dev2.jpg"
                                         alt="Product"
                                         className="w-10 h-10 object-cover rounded"
                                     />
@@ -203,13 +203,13 @@ const TestimonialCarousel = () => {
                                 muted
                                 className="w-full h-full object-cover"
                             >
-                                <source src="/src/assets/videos/vid7.mp4" type="video/mp4" />
+                                <source src="/static/videos/vid7.mp4" type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
                             <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
                                 <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
                                     <img
-                                        src="/src/assets/images/dev2.jpg"
+                                        src="/static/images/dev2.jpg"
                                         alt="Product"
                                         className="w-10 h-10 object-cover rounded"
                                     />
@@ -229,13 +229,13 @@ const TestimonialCarousel = () => {
                                 muted
                                 className="w-full h-full object-cover"
                             >
-                                <source src="/src/assets/videos/vid1.mp4" type="video/mp4" />
+                                <source src="/static/videos/vid1.mp4" type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
                             <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
                                 <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
                                     <img
-                                        src="/src/assets/images/dev2.jpg"
+                                        src="/static/images/dev2.jpg"
                                         alt="Product"
                                         className="w-10 h-10 object-cover rounded"
                                     />
@@ -255,13 +255,13 @@ const TestimonialCarousel = () => {
                                 muted
                                 className="w-full h-full object-cover"
                             >
-                                <source src="/src/assets/videos/vid2.mp4" type="video/mp4" />
+                                <source src="/static/videos/vid2.mp4" type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
                             <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
                                 <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
                                     <img
-                                        src="/src/assets/images/dev2.jpg"
+                                        src="/static/images/dev2.jpg"
                                         alt="Product"
                                         className="w-10 h-10 object-cover rounded"
                                     />
@@ -281,13 +281,13 @@ const TestimonialCarousel = () => {
                                 muted
                                 className="w-full h-full object-cover"
                             >
-                                <source src="/src/assets/videos/vid3.mp4" type="video/mp4" />
+                                <source src="/static/videos/vid3.mp4" type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
                             <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
                                 <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
                                     <img
-                                        src="/src/assets/images/dev2.jpg"
+                                        src="/static/images/dev2.jpg"
                                         alt="Product"
                                         className="w-10 h-10 object-cover rounded"
                                     />

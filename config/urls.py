@@ -4,8 +4,9 @@ from django.views.generic import TemplateView
 from users import views as user_views
 from django.conf import settings
 from django.conf.urls.static import static
-from config.views import home, custom_logout
+from config.views import home, custom_logout, about, checkout
 from inertia.middleware import InertiaMiddleware
+from product.views import submit_review
 
 
 urlpatterns = [
@@ -15,6 +16,9 @@ urlpatterns = [
     path('dashboard/', user_views.dashboard_page, name='dashboard'),
 
     path('products/', include('product.urls')),
+    path('api/products/<int:product_id>/submit-review/', submit_review, name='submit_review'),
+    path('about/', about , name='about'),
+    path('checkout/', checkout, name='checkout'),
     path('logout/', custom_logout, name='custom_logout'),
     path('accounts/', include('allauth.urls')),
 ]

@@ -1,118 +1,88 @@
-// static/src/js/Pages/components/CurrencyContext.jsx
-import React, {
-    createContext,
-    useContext,
-    useState,
-    useEffect
-} from "react";
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// 1) Available currencies
-export const currencies = [
-    {
-        country: "United States",
-        code: "USD",
-        symbol: "$",
-        icon:
-            "https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/flags/4x3/us.svg"
-    },
-    {
-        country: "Canada",
-        code: "CAD",
-        symbol: "$",
-        icon:
-            "https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/flags/4x3/ca.svg"
-    },
-    {
-        country: "Cameroon",
-        code: "XAF",
-        symbol: "FCFA",
-        icon:
-            "https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/flags/4x3/cm.svg"
-    },
-    {
-        country: "France",
-        code: "EUR",
-        symbol: "€",
-        icon:
-            "https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/flags/4x3/fr.svg"
-    }
-];
-
+// Create the context
 const CurrencyContext = createContext();
 
-export function useCurrency() {
-    return useContext(CurrencyContext);
-}
+// List of supported currencies
+export const currencies = [
+    {
+        country: 'United States',
+        code: 'USD',
+        symbol: '$',
+        icon: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/flags/4x3/us.svg',
+    },
+    {
+        country: 'Canada',
+        code: 'CAD',
+        symbol: '$',
+        icon: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/flags/4x3/ca.svg',
+    },
+    {
+        country: 'Cameroon',
+        code: 'XAF',
+        symbol: 'FCFA',
+        icon: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/flags/4x3/cm.svg',
+    },
+    {
+        country: 'France',
+        code: 'EUR',
+        symbol: '€',
+        icon: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.6.6/flags/4x3/fr.svg',
+    },
+];
 
-export function CurrencyProvider({ children }) {
-    // 2) load saved or default to XAF
-    const [selectedCurrency, setSelectedCurrency] = useState(() => {
-        const stored = localStorage.getItem("currency");
-        return currencies.find((c) => c.code === stored) || currencies[2];
-    });
+export const CurrencyProvider = ({ children }) => {
+    const defaultCurrency = currencies.find(c => c.code === 'XAF');
+    const [selectedCurrency, setSelectedCurrency] = useState(defaultCurrency);
+    const [exchangeRates, setExchangeRates] = useState({ XAF: 1 });
 
-    // 3) initialize all rates to 1 so convert() never reads undefined
-    const [exchangeRates, setExchangeRates] = useState({
-        USD: 1,
-        CAD: 1,
-        XAF: 1,
-        EUR: 1
-    });
-
-    // 4) fetch live rates (base XAF) every 10m
+    // Fetch exchange rates on mount and periodically refresh
     useEffect(() => {
-        let mounted = true;
-        async function fetchRates() {
+        const fetchRates = async () => {
             try {
-                const res = await fetch(
-                    "https://api.exchangerate.host/latest?base=XAF&symbols=USD,CAD,XAF,EUR"
-                );
-                const data = await res.json();
-                if (
-                    data?.rates &&
-                    typeof data.rates === "object" &&
-                    ["USD", "CAD", "XAF", "EUR"].every((c) => c in data.rates)
-                ) {
-                    if (mounted) setExchangeRates(data.rates);
-                } else {
-                    throw new Error("Rates missing or malformed");
-                }
-            } catch (err) {
-                console.error("Failed to fetch exchange rates:", err);
-                // leave fallback {1,1,1,1} or set approximate defaults here
+                const response = await fetch('https://api.exchangerate.host/latest?base=XAF');
+                const data = await response.json();
+
+                const filteredRates = {};
+                ['USD', 'CAD', 'XAF', 'EUR'].forEach(code => {
+                    filteredRates[code] = data.rates[code];
+                });
+
+                setExchangeRates(filteredRates);
+            } catch (error) {
+                console.error('Failed to fetch exchange rates:', error);
+                setExchangeRates({
+                    XAF: 1,
+                    USD: 0.0017,
+                    CAD: 0.0023,
+                    EUR: 0.0016,
+                });
             }
-        }
-        fetchRates();
-        const id = setInterval(fetchRates, 10 * 60 * 1000);
-        return () => {
-            mounted = false;
-            clearInterval(id);
         };
+
+        fetchRates();
+        const interval = setInterval(fetchRates, 10 * 60 * 1000);
+        return () => clearInterval(interval);
     }, []);
 
-    // 5) persist user choice
-    useEffect(() => {
-        localStorage.setItem("currency", selectedCurrency.code);
-    }, [selectedCurrency]);
-
-    // 6) convert XAF → selected currency, formatted to 2 decimals
-    function convertAmount(amountInXAF) {
+    // Convert amount from FCFA to selected currency
+    const convertAmount = (amountInXAF) => {
         const rate = exchangeRates[selectedCurrency.code] || 1;
-        const converted = amountInXAF * rate;
-        return converted.toFixed(2);
-    }
+        return amountInXAF * rate;
+    };
 
     return (
-        <CurrencyContext.Provider
-            value={{
-                currencies,
-                selectedCurrency,
-                setSelectedCurrency,
-                convertAmount,
-                exchangeRates
-            }}
-        >
+        <CurrencyContext.Provider value={{
+            selectedCurrency,
+            setSelectedCurrency,
+            currencies,
+            exchangeRates,
+            convertAmount,
+        }}>
             {children}
         </CurrencyContext.Provider>
     );
-}
+};
+
+// Hook to use currency context
+export const useCurrency = () => useContext(CurrencyContext);

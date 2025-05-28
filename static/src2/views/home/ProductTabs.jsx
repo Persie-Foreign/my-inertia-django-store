@@ -160,6 +160,7 @@ export default function ProductTabs({ setIsCartOpen, isCartOpen }) {
                     />
                 </div>
 
+
                 {/* Dynamic Product Cards */}
                 <div className="col-span-2 grid grid-cols-2 gap-5">
                     {tabProducts[activeTab].map((product, index) => (

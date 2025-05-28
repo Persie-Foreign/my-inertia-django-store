@@ -6,3 +6,10 @@
 @tailwind utilities;
 
 /* Your custom styles below */
+/* Somewhere in your global CSS file */
+@layer utilities {
+    .animate-spin-slow {
+        animation: spin 1.2s linear infinite;
+    }
+}
+

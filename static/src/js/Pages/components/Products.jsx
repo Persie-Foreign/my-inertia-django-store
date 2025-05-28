@@ -2,7 +2,7 @@ export const products = [
     {
         id: 1,
         name: 'Glass Skin Essential Set',
-        image: '/src/assets/images/dev2.jpg',  // Original image
+        image: '/static/images/dev2.jpg',  // Original image
         images: [                  // gallery images
             '/src/assets/images/dev4.jpg',
             '/src/assets/images/dev5.jpg',
