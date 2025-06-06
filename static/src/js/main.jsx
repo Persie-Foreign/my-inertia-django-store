@@ -7,6 +7,7 @@ import AppLayout from './Pages/components/AppLayout.jsx';
 import '../css/app.css';
 import { CartProvider } from './Pages/components/CartContext.jsx';
 import {CurrencyProvider} from "./Pages/components/CurrencyContext.jsx";
+import {MegaMenuProvider} from "./Pages/components/MegaMenuContext.jsx";
 
 createInertiaApp({
     resolve: (name) => {
@@ -29,7 +30,9 @@ createInertiaApp({
         root.render(
             <CurrencyProvider>
                 <CartProvider>
-                    <App {...props} />
+                    <MegaMenuProvider>
+                        <App {...props} />
+                    </MegaMenuProvider>
                 </CartProvider>
             </CurrencyProvider>
         );

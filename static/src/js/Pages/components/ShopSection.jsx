@@ -21,13 +21,26 @@ const ShopSection = ({ isOpen, onClose, selectedCategory }) => {
     if (url === '/checkout') return null;
     if (!isOpen) return null;
 
-    const rawCategoryProducts = productsByCategory[selectedCategory];
 
-    const categoryList = Array.isArray(relatedProducts) && relatedProducts.length > 0
-        ? relatedProducts
+    const latestCategory =
+        cart.length > 0 && cart[cart.length - 1].category
+            ? cart[cart.length - 1].category
+            : selectedCategory;
+
+    const filteredRelatedProducts = relatedProducts.filter(
+        p =>
+            p.category?.name === latestCategory
+    );
+
+    const rawCategoryProducts = productsByCategory[latestCategory];
+
+
+    const categoryList = filteredRelatedProducts.length > 0
+        ? filteredRelatedProducts
         : rawCategoryProducts && typeof rawCategoryProducts === 'object'
-            ? Object.values(rawCategoryProducts)
+            ? Object.values(rawCategoryProducts).flat()
             : [];
+
 
 
     const frequentlyBoughtProducts = categoryList
@@ -65,12 +78,33 @@ const ShopSection = ({ isOpen, onClose, selectedCategory }) => {
     const totalQuantity = calculateTotalItems();
     const isLimitReached = totalQuantity >= 10;
 
-    console.log('relatedProducts:', relatedProducts);
-    console.log('productsByCategory:', productsByCategory);
-    console.log('selectedCategory:', selectedCategory);
-    console.log('categoryList:', categoryList);
-    console.log('cart:', cart);
-    console.log('frequentlyBoughtProducts:', frequentlyBoughtProducts);
+    const handleAddToCart = (product) => {
+        setCart(prev => {
+            const total = prev.reduce((sum, x) => sum + x.quantity, 0);
+            if (total >= 10) {
+                toast.error('Cart limit reached.');
+                return prev;
+            }
+
+            const found = prev.find(x => x.id === product.id);
+            if (found) {
+                return prev.map(x =>
+                    x.id === product.id ? { ...x, quantity: x.quantity + 1 } : x
+                );
+            }
+
+            return [
+                ...prev,
+                {
+                    ...product,
+                    quantity: 1,
+                    size: '',
+                    // ensure all necessary fields exist here, like image_url or price
+                },
+            ];
+        });
+    };
+
 
     return (
         <>
@@ -182,28 +216,19 @@ const ShopSection = ({ isOpen, onClose, selectedCategory }) => {
                                         <div className="w-full">
                                             <h4 className="text-lg font-bold mb-4 ml-2">{p.title}</h4>
                                             <div className="flex items-center justify-between space-x-4">
-                                                <div>
+                                                <div className='ml-2'>
                                                     <span className="font-bold">
                                                         {selectedCurrency.symbol}{convertAmount(p.price, selectedCurrency.code).toFixed(2)}
                                                     </span>
-                                                    {p.original_price && (
-                                                        <span className="ml-2 text-gray-400 line-through">
-                                                            {selectedCurrency.symbol}{convertAmount(p.original_price, selectedCurrency.code).toFixed(2)}
-                                                        </span>
-                                                    )}
                                                 </div>
                                                 <button
                                                     disabled={isLimitReached}
                                                     className={`bg-black text-white px-4 py-2 ${isLimitReached ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    onClick={() => {
-                                                        const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
-                                                        if (totalQty < 10) {
-                                                            setCart(prev => [...prev, { ...p, quantity: 1, size: '' }]);
-                                                        }
-                                                    }}
+                                                    onClick={() => handleAddToCart(p)}
                                                 >
                                                     ADD
                                                 </button>
+
                                             </div>
                                         </div>
                                     </div>

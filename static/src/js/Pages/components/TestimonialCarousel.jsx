@@ -1,306 +1,51 @@
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React from 'react';
+
+const videoData = [
+    { src: '/static/videos/vid1.mp4', title: 'NIACINAMIDE...', price: '$22.00' },
+    { src: '/static/videos/vid2.mp4', title: 'Rice Enzyme...', price: '$18.00' },
+    { src: '/static/videos/vid3.mp4', title: 'Azelaic Acid...', price: '$22.00' },
+    { src: '/static/videos/vid4.mp4', title: 'Double Cleansing...', price: '$34.00', original: '$40.00' },
+    { src: '/static/videos/vid5.mp4', title: 'Vitamin C Serum...', price: '$26.00' },
+    { src: '/static/videos/vid6.mp4', title: 'Hydrating Cream...', price: '$24.00' },
+    { src: '/static/videos/vid1.mp4', title: 'Rose Water Toner...', price: '$19.00' },
+    { src: '/static/videos/vid2.mp4', title: 'HA Moisturizer...', price: '$25.00' },
+    { src: '/static/videos/vid3.mp4', title: 'Ceramide Barrier...', price: '$30.00', original: '$35.00' },
+];
 
 const TestimonialCarousel = () => {
-    const [currentPage, setCurrentPage] = useState(1);
-
-    const handleNextPage = () => {
-        setCurrentPage(2);
-    };
-
-    const handlePrevPage = () => {
-        setCurrentPage(1);
-    };
-
     return (
         <div className="py-10">
-            {currentPage === 1 && (
-                <>
-                    {/* Testimonial Grid - Page 1 */}
-                    <div className="grid grid-cols-5 gap-5">
-                        {/* Testimonial 1 */}
-                        <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
-                            <video
-                                autoPlay
-                                loop
-                                muted
-                                className="w-full h-full object-cover"
-                            >
-                                <source src="/static/videos/vid1.mp4" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
-                                <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
-                                    <img
-                                        src="/static/images/dev2.jpg"
-                                        alt="Product"
-                                        className="w-10 h-10 object-cover rounded"
-                                    />
-                                </div>
-                                <div className="text-white">
-                                    <h3 className="text-sm font-bold">NIACINAMIDE...</h3>
-                                    <p className="text-sm">$22.00</p>
-                                </div>
+            <div className="flex overflow-x-auto space-x-4 snap-x scroll-smooth px-4 hide-scrollbar">
+                {videoData.map((video, index) => (
+                    <div
+                        key={index}
+                        className="snap-start flex-shrink-0 w-[90%] sm:w-1/2 md:w-1/3 lg:w-1/5 relative bg-white rounded-lg overflow-hidden shadow-sm"
+                    >
+                        <video autoPlay loop muted className="w-full h-full object-cover">
+                            <source src={video.src} type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
+                        <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
+                            <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
+                                <img
+                                    src="/static/images/dev2.jpg"
+                                    alt="Product"
+                                    className="w-10 h-10 object-cover rounded"
+                                />
                             </div>
-                        </div>
-
-                        {/* Testimonial 2 */}
-                        <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
-                            <video
-                                autoPlay
-                                loop
-                                muted
-                                className="w-full h-full object-cover"
-                            >
-                                <source src="/static/videos/vid2.mp4" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
-                                <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
-                                    <img
-                                        src="/static/images/dev2.jpg"
-                                        alt="Product"
-                                        className="w-10 h-10 object-cover rounded"
-                                    />
-                                </div>
-                                <div className="text-white">
-                                    <h3 className="text-sm font-bold">Rice Enzyme...</h3>
-                                    <p className="text-sm">$18.00</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Testimonial 3 */}
-                        <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
-                            <video
-                                autoPlay
-                                loop
-                                muted
-                                className="w-full h-full object-cover"
-                            >
-                                <source src="/static/videos/vid3.mp4" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
-                                <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
-                                    <img
-                                        src="/static/images/dev2.jpg"
-                                        alt="Product"
-                                        className="w-10 h-10 object-cover rounded"
-                                    />
-                                </div>
-                                <div className="text-white">
-                                    <h3 className="text-sm font-bold">Azelaic Acid 10...</h3>
-                                    <p className="text-sm">$22.00</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Testimonial 4 */}
-                        <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
-                            <video
-                                autoPlay
-                                loop
-                                muted
-                                className="w-full h-full object-cover"
-                            >
-                                <source src="/static/videos/vid4.mp4" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
-                                <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
-                                    <img
-                                        src="/static/images/dev2.jpg"
-                                        alt="Product"
-                                        className="w-10 h-10 object-cover rounded"
-                                    />
-                                </div>
-                                <div className="text-white">
-                                    <h3 className="text-sm font-bold">NIACINAMIDE...</h3>
-                                    <p className="text-sm">$22.00</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Testimonial 5 */}
-                        <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
-                            <video
-                                autoPlay
-                                loop
-                                muted
-                                className="w-full h-full object-cover"
-                            >
-                                <source src="/static/videos/vid5.mp4" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
-                                <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
-                                    <img
-                                        src="/static/images/dev2.jpg"
-                                        alt="Product"
-                                        className="w-10 h-10 object-cover rounded"
-                                    />
-                                </div>
-                                <div className="text-white">
-                                    <h3 className="text-sm font-bold">Double Cleansing D...</h3>
-                                    <p className="text-sm">$34.00 <span className="text-gray-400 line-through">$40.00</span></p>
-                                </div>
-                            </div>
-                            {/* Next Button Icon */}
-                            <button
-                                onClick={handleNextPage}
-                                className="absolute right-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition z-30"
-                            >
-                                <ChevronRight size={20} />
-                            </button>
-                        </div>
-                    </div>
-                </>
-            )}
-
-            {currentPage === 2 && (
-                <>
-                    {/* Testimonial Grid - Page 2 */}
-                    <div className="grid grid-cols-5 gap-5">
-                        {/* Testimonial 6 */}
-                        <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
-                            <video
-                                autoPlay
-                                loop
-                                muted
-                                className="w-full h-full object-cover"
-                            >
-                                <source src="/static/videos/vid6.mp4" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
-                                <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
-                                    <img
-                                        src="/static/images/dev2.jpg"
-                                        alt="Product"
-                                        className="w-10 h-10 object-cover rounded"
-                                    />
-                                </div>
-                                <div className="text-white">
-                                    <h3 className="text-sm font-bold">Vitamin C Serum...</h3>
-                                    <p className="text-sm">$26.00</p>
-                                </div>
-                            </div>
-                            {/* Previous Button Icon */}
-                            <button
-                                onClick={handlePrevPage}
-                                className="absolute left-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition z-30"
-                            >
-                                <ChevronLeft size={20} />
-                            </button>
-                        </div>
-
-                        {/* Testimonial 7 */}
-                        <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
-                            <video
-                                autoPlay
-                                loop
-                                muted
-                                className="w-full h-full object-cover"
-                            >
-                                <source src="/static/videos/vid7.mp4" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
-                                <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
-                                    <img
-                                        src="/static/images/dev2.jpg"
-                                        alt="Product"
-                                        className="w-10 h-10 object-cover rounded"
-                                    />
-                                </div>
-                                <div className="text-white">
-                                    <h3 className="text-sm font-bold">Hydrating Cream...</h3>
-                                    <p className="text-sm">$24.00</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Testimonial 8 */}
-                        <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
-                            <video
-                                autoPlay
-                                loop
-                                muted
-                                className="w-full h-full object-cover"
-                            >
-                                <source src="/static/videos/vid1.mp4" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
-                                <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
-                                    <img
-                                        src="/static/images/dev2.jpg"
-                                        alt="Product"
-                                        className="w-10 h-10 object-cover rounded"
-                                    />
-                                </div>
-                                <div className="text-white">
-                                    <h3 className="text-sm font-bold">Rose Water Toner...</h3>
-                                    <p className="text-sm">$19.00</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Testimonial 9 */}
-                        <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
-                            <video
-                                autoPlay
-                                loop
-                                muted
-                                className="w-full h-full object-cover"
-                            >
-                                <source src="/static/videos/vid2.mp4" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
-                                <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
-                                    <img
-                                        src="/static/images/dev2.jpg"
-                                        alt="Product"
-                                        className="w-10 h-10 object-cover rounded"
-                                    />
-                                </div>
-                                <div className="text-white">
-                                    <h3 className="text-sm font-bold">HA Moisturizer...</h3>
-                                    <p className="text-sm">$25.00</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Testimonial 10 */}
-                        <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
-                            <video
-                                autoPlay
-                                loop
-                                muted
-                                className="w-full h-full object-cover"
-                            >
-                                <source src="/static/videos/vid3.mp4" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <div className="flex items-center bg-transparent justify-between mb-2 absolute bottom-1 left-2 z-20">
-                                <div className="w-8 h-8 rounded flex items-center justify-center mr-2">
-                                    <img
-                                        src="/static/images/dev2.jpg"
-                                        alt="Product"
-                                        className="w-10 h-10 object-cover rounded"
-                                    />
-                                </div>
-                                <div className="text-white">
-                                    <h3 className="text-sm font-bold">Ceramide Barrier...</h3>
-                                    <p className="text-sm">$30.00 <span className="text-gray-400 line-through">$35.00</span></p>
-                                </div>
+                            <div className="text-white">
+                                <h3 className="text-sm font-bold">{video.title}</h3>
+                                <p className="text-sm">
+                                    {video.price}{' '}
+                                    {video.original && (
+                                        <span className="text-gray-400 line-through">{video.original}</span>
+                                    )}
+                                </p>
                             </div>
                         </div>
                     </div>
-                </>
-            )}
+                ))}
+            </div>
         </div>
     );
 };

@@ -3,15 +3,16 @@ import React, { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import Navbar from './Navbar.jsx';
 import Footer from './Footer.jsx';
-import ShopToolbar from './ShopToolbar.jsx';
 import ShopSidebar from './ShopSidebar.jsx';
 import CartSidebar from './CartSidebar.jsx';
 import { Toaster } from 'react-hot-toast';
 import { useCart } from './CartContext.jsx';
+import {FilterProvider} from "./FilterContext.jsx";
 
 export default function AppLayout({ children }) {
     const { auth, url: inertiaUrl } = usePage().props;
-
+    const { products = [] } = usePage().props;
+    const filteredProducts = products.slice(0, 10);
     // Normalize pathname without trailing slash
     const getPathname = () => {
         if (typeof window !== 'undefined') {
@@ -38,7 +39,7 @@ export default function AppLayout({ children }) {
     const shouldHideLayout = hideLayoutPatterns.some((rx) =>
         rx.test(pathname)
     );
-    const isShopAllPage = pathname === '/products';
+    const isShopAllPage = pathname.startsWith('/products');
 
     useEffect(() => {
         const onStart = () => setIsCartOpen(false);
@@ -52,16 +53,11 @@ export default function AppLayout({ children }) {
         setCart((prev) => prev.filter((item) => item.id !== id));
     };
 
+
     return (
-        <>
+        <FilterProvider>
             {!shouldHideLayout && (
                 <Navbar auth={auth} setIsCartOpen={setIsCartOpen} />
-            )}
-
-            {!shouldHideLayout && isShopAllPage && (
-                <div className="fixed top-[116px] w-full z-40">
-                    <ShopToolbar />
-                </div>
             )}
 
             <Toaster position="top-center" />
@@ -85,8 +81,9 @@ export default function AppLayout({ children }) {
                     <CartSidebar
                         isOpen={isCartOpen}
                         onClose={() => setIsCartOpen(false)}
+                        filteredProducts={filteredProducts}
                     />
                 ))}
-        </>
+        </FilterProvider>
     );
 }

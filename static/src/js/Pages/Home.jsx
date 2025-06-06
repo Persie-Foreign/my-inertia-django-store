@@ -88,8 +88,14 @@ export default function Home({ setIsCartOpen, isCartOpen }) {
     try { ({ cart, setCart } = useCart()); }
     catch { cart = []; setCart = () => {}; }
 
+    const [selectedCategory, setSelectedCategory] = useState(null);
+
+
 
     const handleAddToCart = (product) => {
+        setSelectedCategory(
+            product?.category?.name || 'Unknown'
+        );
         setCart(prevCart => {
             const totalQuantity = prevCart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -120,6 +126,7 @@ export default function Home({ setIsCartOpen, isCartOpen }) {
                         image_url: product.image1 || product.image || (product.images && product.images[0]) || '',
                         quantity: 1,
                         size: '',
+                        category: product.category?.name || 'Unknown',
                     }
                 ];
             }
@@ -210,23 +217,24 @@ export default function Home({ setIsCartOpen, isCartOpen }) {
                                 className="bg-white rounded-lg shadow hover:shadow-lg overflow-hidden relative"
                             >
                                 {/* Tags */}
-                                <div className="absolute top-2 left-2 flex flex-col space-y-1 z-10 px-2">
+                                <div className="absolute top-1 left-1 flex flex-col items-start space-y-0.5 z-20 w-max">
                                     {p.is_new && (
-                                        <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                NEW
-              </span>
+                                        <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded inline-block">
+                                            NEW
+                                        </span>
                                     )}
                                     {p.is_best && (
-                                        <span className="bg-black text-white text-xs px-2 py-1 rounded">
-                BEST
-              </span>
+                                        <span className="bg-black text-white text-xs px-2 py-1 rounded inline-block">
+                                            BEST
+                                        </span>
                                     )}
                                     {p.save_amount != null && (
-                                        <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">
-                SAVE FCFA{p.save_amount}
-              </span>
+                                        <span className="bg-red-600 text-white text-xs px-2 py-1 rounded inline-block">
+                                            SAVE FCFA{p.save_amount}
+                                        </span>
                                     )}
                                 </div>
+
 
                                 {/* Images */}
                                 <Link
@@ -253,23 +261,24 @@ export default function Home({ setIsCartOpen, isCartOpen }) {
                                     >
                                         {p.title}
                                     </Link>
+                                    <p className="text-sm text-gray-600">{p.category.name}</p>
                                     <div className="flex items-center text-sm text-gray-600 mb-2">
-                                        {[...Array(5)].map((_, i) => (
+                                        {[...Array(5)].map((_, idx) => (
                                             <span
-                                                key={i}
+                                                key={idx}
                                                 className={
-                                                    i < Math.round(p.rating)
-                                                        ? "text-green-500 mr-1"
-                                                        : "text-gray-300 mr-1"
+                                                    idx < Math.round(p.reviews_count / 5)
+                                                        ? 'text-green-900 mr-1'
+                                                        : 'text-gray-300 mr-1'
                                                 }
                                             >
-                  ★
-                </span>
+                                                          ★
+                                                        </span>
                                         ))}
                                         <span>{p.reviews_count} Reviews</span>
                                     </div>
                                     <div className="flex items-baseline justify-center mb-4">
-              <span className="text-xl font-bold">
+              <span className="text-xl font-bold text-red-500">
                 {selectedCurrency.symbol}
                   {convertAmount(p.price).toFixed(2)}
               </span>
@@ -287,9 +296,9 @@ export default function Home({ setIsCartOpen, isCartOpen }) {
                                         className="w-full relative border py-2 text-center uppercase font-bold overflow-hidden group add-to-cart-btn"
                                         onClick={() => handleAddToCart(p)}
                                     >
-              <span className="relative z-10 transition-colors duration-300 group-hover:text-white">
-                Add to cart
-              </span>
+                                        <span className="relative z-10 transition-colors duration-300 group-hover:text-white">
+                                            Add to cart
+                                        </span>
                                         <span className="absolute inset-0 bg-black transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
                                     </button>
                                 </div>

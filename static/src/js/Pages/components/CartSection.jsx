@@ -1,8 +1,17 @@
 import React from 'react';
-import { Head } from '@inertiajs/react';
+import {Head, usePage} from '@inertiajs/react';
 import ProductCarousel from "./ProductCarousel.jsx";
 
-const CartSection = ({ onClose }) => {
+const CartSection = ({ onClose, setIsCartOpen, filteredProducts = [] }) => {
+
+    const { relatedProducts = [] } = usePage().props;
+    const recommended = relatedProducts.slice(0, 10);
+
+
+    console.log('Recommended:', recommended);
+    console.log(usePage().props);
+
+
     return (
         <>
             <Head title="Your Cart" />
@@ -45,7 +54,10 @@ const CartSection = ({ onClose }) => {
 
                 {/* Recommended Products */}
                 <div className="mt-4">
-                    <ProductCarousel/>
+                    <ProductCarousel
+                        products={recommended}
+                        setIsCartOpen={setIsCartOpen}
+                    />
                 </div>
             </div>
         </>

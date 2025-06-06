@@ -49,18 +49,21 @@ INSTALLED_APPS = [
     # Sites framework (Allauth needs this)
     'django.contrib.sites',
 
+
     # Third-party
     'inertia',
     'django_vite',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'inertia.middleware.InertiaMiddleware',     # ← before CommonMiddleware
+    'inertia.middleware.InertiaMiddleware',
+    'corsheaders.middleware.CorsMiddleware',# ← before CommonMiddleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -68,9 +71,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     "config.middleware.InertiaUserMiddleware"
-
-
 ]
+
+# Allow all origins for development
+CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = 'users.User'
 ROOT_URLCONF = 'config.urls'

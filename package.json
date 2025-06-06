@@ -19,6 +19,8 @@
         "@tailwindcss/vite": "^4.1.6",
         "daisyui": "^5.0.35",
         "embla-carousel-react": "^8.6.0",
+        "framer-motion": "^12.15.0",
+        "lodash.debounce": "^4.0.8",
         "lucide-react": "^0.510.0",
         "rc-slider": "^11.1.8",
         "react": "^19.1.0",

@@ -1,50 +1,16 @@
-import React, { useCallback, useEffect, useState } from 'react';
+// ProductCarousel.jsx
+import React, { useCallback, useEffect } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import {useCart} from "./CartContext.jsx"; // Optional clean icons
+import { useCart } from './CartContext.jsx';
 
-const products = [
-    {
-        id: 1,
-        title: 'BHA 2% Gentle Exfoliating',
-        price: '$20.00',
-        image: '/src/assets/images/dev2.jpg',
-    },
-    {
-        id: 2,
-        title: '3 Ceramide Panthenol',
-        price: '$20.00',
-        image: '/src/assets/images/dev5.jpg',
-    },
-    {
-        id: 3,
-        title: '8 Hyaluronic Acid Hydrating',
-        price: '$18.00',
-        image: '/src/assets/images/dev4.jpg',
-    },
-    {
-        id: 4,
-        title: 'Vitamin C Brightening Serum',
-        price: '$22.00',
-        image: '/src/assets/images/dev5.jpg',
-    },
-    {
-        id: 5,
-        title: 'Niacinamide 10% Booster',
-        price: '$19.00',
-        image: '/src/assets/images/dev2.jpg',
-    },
-];
-
-const ProductCarousel = ({ setIsCartOpen, isCartOpen }) => {
+const ProductCarousel = ({ setIsCartOpen, isCartOpen, products = [] }) => {
     const [emblaRef, emblaApi] = useEmblaCarousel({
         slidesToScroll: 1,
         containScroll: 'trimSnaps',
         loop: true,
         align: 'start',
     });
-
-    const [autoplayInterval, setAutoplayInterval] = useState(null);
 
     const scrollPrev = useCallback(() => {
         if (emblaApi) emblaApi.scrollPrev();
@@ -56,14 +22,9 @@ const ProductCarousel = ({ setIsCartOpen, isCartOpen }) => {
 
     // Auto-scroll every 4s
     useEffect(() => {
-        if (emblaApi) {
-            const interval = setInterval(() => {
-                emblaApi.scrollNext();
-            }, 4000);
-            setAutoplayInterval(interval);
-
-            return () => clearInterval(interval);
-        }
+        if (!emblaApi) return;
+        const interval = setInterval(() => emblaApi.scrollNext(), 4000);
+        return () => clearInterval(interval);
     }, [emblaApi]);
 
     const { cart, setCart } = useCart();
@@ -78,7 +39,15 @@ const ProductCarousel = ({ setIsCartOpen, isCartOpen }) => {
                         : item
                 );
             } else {
-                return [...prevCart, { ...product, quantity: 1, size: '' }];
+                return [...prevCart, {
+                    ...product,
+                    image_url: product.images?.[0] || '',
+                    quantity: 1,
+                    size: '',
+                    category: product.category?.name || '',
+                    price: product.price,
+                    original_price: product.original_price,
+                }];
             }
         });
         setIsCartOpen(true);
@@ -97,12 +66,14 @@ const ProductCarousel = ({ setIsCartOpen, isCartOpen }) => {
                                 key={product.id}
                             >
                                 <img
-                                    src={product.image}
+                                    src={product.images?.[0] || '/fallback.jpg'}
                                     alt={product.title}
                                     className="w-full h-[7rem] object-cover mb-3 rounded"
                                 />
                                 <h4 className="text-xs font-bold">{product.title}</h4>
-                                <p className="text-gray-700 font-bold">{product.price}</p>
+                                <p className="text-gray-700 font-bold">
+                                    ${product.price?.toFixed(2)}
+                                </p>
                                 <button
                                     onClick={() => handleAddToCart(product)}
                                     className="mt-1 bg-black text-white py-2 w-full hover:bg-gray-800 text-sm rounded"
@@ -114,7 +85,6 @@ const ProductCarousel = ({ setIsCartOpen, isCartOpen }) => {
                     </div>
                 </div>
 
-                {/* Prev/Next Buttons */}
                 <button
                     onClick={scrollPrev}
                     className="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow rounded-full p-2 hover:bg-gray-100"

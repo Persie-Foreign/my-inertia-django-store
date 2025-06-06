@@ -5,39 +5,15 @@ from django.views.decorators.http import require_http_methods
 import json
 from django.http        import JsonResponse, HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
-from .models           import Product, Review, ReviewMedia
+from .models           import Product, Review, ReviewMedia, Category
 from django.db.models import Count
 
 from django.shortcuts import get_object_or_404
-from .models import Product
+from collections import defaultdict
 
-
-
-def home(request):
-    """
-    Renders the homepage with best-seller listing.
-    """
-    qs = Product.objects.filter(is_best=True, images__isnull=False).distinct().prefetch_related('images', 'reviews')
-    products = []
-    for p in qs:
-        images = [img.image.url for img in p.images.all()]
-        products.append({
-            'id':               p.id,
-            'title':            p.title,
-            'slug':             p.slug,
-            'image1':           p.images[0].image.url if p.images.exists() else '',
-            'image2':           p.images[1].image.url if p.images.count()>1 else (p.images[0].image.url if p.images.exists() else ''),
-            'images':           images,
-            'price':            float(p.price),
-            'original_price':   float(p.original_price) if p.original_price else None,
-            'reviews_count':    p.reviews.count(),
-            'is_new':           p.is_new,
-            'is_best':          p.is_best,
-            'save_amount':      p.save_amount,
-        })
-
-    return render(request, 'Home', { 'products': products })
-
+# views.py
+from django.http import JsonResponse
+from django.db.models import Q
 
 
 def product_list(request):
@@ -46,51 +22,102 @@ def product_list(request):
     """
     qs = Product.objects.filter(images__isnull=False).distinct().prefetch_related('category__parent', 'images', 'reviews')
 
-    # 🔥 Filter by ?category= from query string if provided
-    category_filter = request.GET.get('category')
-    if category_filter:
-        qs = qs.filter(category__name__iexact=category_filter)
+    # 🔍 Add keyword search
+    search_query = request.GET.get('search')
+    if search_query:
+        qs = qs.filter(title__icontains=search_query)
 
+    # 🔥 Filter by multiple ?category=
+    category_filter = request.GET.getlist('category')
+    if category_filter:
+        qs = qs.filter(category__name__in=category_filter)
+
+    # Products list
     products = []
     for p in qs:
         products.append({
-            'id':               p.id,
-            'title':            p.title,
-            'slug':             p.slug,
+            'id': p.id,
+            'title': p.title,
+            'slug': p.slug,
             'category': {
-                'name':   p.category.name,
+                'name': p.category.name,
                 'parent': p.category.parent.name if p.category.parent else None,
             },
-            'images':           [img.image.url for img in p.images.all()],
-            'price':            float(p.price),
+            'images': [img.image.url for img in p.images.all()],
+            'price': float(p.price),
+            'reviews_count':  p.reviews.count(),
+            'is_new':         p.is_new,
+            'is_best':        p.is_best,
+            'save_amount':    p.save_amount,
+            'created_at':     p.created_at,
+            'updated_at':     p.updated_at,
+            'original_price': float(p.original_price) if hasattr(p, 'original_price') and p.original_price is not None else None
         })
-    return render(request, 'ProductList', { 'products': products })
 
-def shop_all(request):
-    qs = (
-        Product.objects
-        .filter(is_active=True)          # only active products
-        .prefetch_related('images','reviews')
-    )
-    products = []
+    # Build products_by_category dictionary
+    products_by_category = defaultdict(list)
     for p in qs:
-        products.append({
-            'id'            : p.id,
-            'slug'          : p.slug,
-            'title'         : p.title,
-            'category'      : p.category.name,
-            'image1'        : p.images[0].image.url if p.images.exists() else '',
-            'image2'        : p.images[1].image.url if p.images.count()>1 else (p.images[0].image.url if p.images.exists() else ''),
-            'price'         : float(p.price),
-            'oldPrice'      : float(p.original_price) if p.original_price else None,
-            'discount'      : float(p.original_price - p.price) if p.original_price else 0,
-            'reviews'       : p.reviews.count(),
-            'date'          : p.created_at.isoformat(),
-            'is_new'        : p.is_new,
+        category_name = p.category.name
+
+        # FIX: Safely handle original_price conversion
+        original_price = None
+        if hasattr(p, 'original_price') and p.original_price is not None:
+            original_price = float(p.original_price)
+
+        products_by_category[category_name].append({
+            'id': p.id,
+            'title': p.title,
+            'slug': p.slug,
+            'category': {
+                'name': category_name,
+                'parent': p.category.parent.name if p.category.parent else None,
+            },
+            'images': [img.image.url for img in p.images.all()],
+            'price': float(p.price),
+            'original_price': original_price,
+            'image_url': p.images.first().image.url if p.images.exists() else '',
         })
-    return render(request, 'ShopAll', {
-        'products': products
+
+    # Categories grouped by parent
+    category_qs = Category.objects.select_related('parent')
+    category_dict = defaultdict(list)
+    for cat in category_qs:
+        parent_name = cat.parent.name if cat.parent else cat.name
+        category_dict[parent_name].append({
+            'id': cat.id,
+            'name': cat.name,
+            'parent': cat.parent.name if cat.parent else None,
+        })
+
+    return render(request, 'ProductList', {
+        'products': products,
+        'categories': dict(category_dict),
+        'activeCategories': category_filter,
+        'productsByCategory': dict(products_by_category),  # Ensure this is included
     })
+
+
+def product_search(request):
+    query = request.GET.get('q', '')
+
+    # Search products by name or description
+    results = Product.objects.filter(
+        Q(title__icontains=query) |
+        Q(description__icontains=query)
+    ).select_related('category')[:10]  # Limit to 10 results
+
+    # Prepare response data
+    products_data = []
+    for product in results:
+        products_data.append({
+            'id': product.id,
+            'name': product.name,
+            'price': float(product.price),  # Convert to float for JSON serialization
+            'image_url': request.build_absolute_uri(product.image.url) if product.image else '',
+            'category': product.category.name if product.category else ''
+        })
+
+    return JsonResponse({'products': products_data})
 
 
 def product_detail(request, slug):

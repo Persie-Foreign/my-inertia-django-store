@@ -21,6 +21,7 @@ urlpatterns = [
     path('checkout/', checkout, name='checkout'),
     path('logout/', custom_logout, name='custom_logout'),
     path('accounts/', include('allauth.urls')),
+
 ]
 
 if settings.DEBUG:

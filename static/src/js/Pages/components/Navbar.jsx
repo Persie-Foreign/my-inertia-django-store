@@ -1,9 +1,61 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import React, {useState, useEffect, useRef, useMemo, useCallback} from 'react';
+import {Link, router, usePage} from '@inertiajs/react';
 import { useCurrency } from './CurrencyContext.jsx';
+import Previewpage from "./Previewpage.jsx";
+import {useMegaMenu} from "./MegaMenuContext.jsx";
+import ShopToolbar from "./ShopToolbar.jsx";
+import {useFilter} from "./FilterContext.jsx";
+import {useCart} from "./CartContext.jsx";
+import debounce from 'lodash.debounce';
 
 const Navbar = ({ setIsCartOpen, auth }) => {
+    const { isMegaOpen } = useMegaMenu();
     const { url } = usePage();
+    const { activeCategories = [], categories = {} } = usePage().props;
+    const [products, setProducts] = useState([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const { selectedCurrency, setSelectedCurrency, currencies } = useCurrency();
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
+    const searchBarRef = useRef(null);
+
+    const [mobileOpen, setMobileOpen]     = useState(false);
+    const [currencyOpen, setCurrencyOpen] = useState(false);
+    const [userOpen, setUserOpen]         = useState(false);
+
+    const currencyRef = useRef();
+    const userRef     = useRef();
+
+    const { cart } = useCart();
+
+    const productCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+
+    const filterContext = useFilter();
+
+    // Safely destructure with defaults
+    const {
+        filters = { categories: activeCategories, priceRange: [0, 1000000] },
+        setFilters,
+        sortOption = '',
+        setSortOption,
+        setLayout
+    } = filterContext || {};
+
+    const highlightMatch = (text, query) => {
+        if (!query) return text;
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.split(regex).map((part, i) =>
+            regex.test(part) ? <span key={i} className="bg-yellow-200 font-semibold">{part}</span> : part
+        );
+    };
 
     const getNormalizedPath = (path) => path.replace(/\/$/, '') || '/';
 
@@ -21,37 +73,7 @@ const Navbar = ({ setIsCartOpen, auth }) => {
         { text: 'Get 15% Off Your First Purchase, Subscribe now !', icon: 'fas fa-tag', color: 'text-yellow-400' },
     ];
 
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [isHovered, setIsHovered] = useState(false);
-    const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const { selectedCurrency, setSelectedCurrency, currencies } = useCurrency();
-
-    const [searchQuery, setSearchQuery] = useState('');
-    const [suggestions, setSuggestions] = useState([]);
-    const [products, setProducts] = useState([]);
-    const searchBarRef = useRef(null);
-
-    const mockSuggestions = ['T-shirt', 'Shoes', 'Socks', 'Hat', 'Hoodie'];
-    const mockProducts = [
-        { name: 'Blue T-shirt', image: 'https://via.placeholder.com/80' },
-        { name: 'Running Shoes', image: 'https://via.placeholder.com/80' },
-    ];
-
-    const handleSearchChange = (e) => {
-        const value = e.target.value;
-        setSearchQuery(value);
-        if (!value.trim()) {
-            setSuggestions([]);
-            setProducts([]);
-            return;
-        }
-        setSuggestions(mockSuggestions.filter(s => s.toLowerCase().includes(value.toLowerCase())));
-        setProducts(mockProducts.filter(p => p.name.toLowerCase().includes(value.toLowerCase())));
-    };
 
     useEffect(() => {
         const interval = setInterval(() => setCurrentIndex((prev) => (prev + 1) % messages.length), 4000);
@@ -90,26 +112,6 @@ const Navbar = ({ setIsCartOpen, auth }) => {
     const menuRef = useRef(null);
     const toggleButtonRef = useRef(null);
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (isMenuOpen &&
-                menuRef.current &&
-                !menuRef.current.contains(event.target) &&
-                !toggleButtonRef.current.contains(event.target)
-            ) {
-                setIsMenuOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isMenuOpen]);
-
-    const [mobileOpen, setMobileOpen]     = useState(false);
-    const [currencyOpen, setCurrencyOpen] = useState(false);
-    const [userOpen, setUserOpen]         = useState(false);
-
-    const currencyRef = useRef();
-    const userRef     = useRef();
 
     useEffect(() => {
         function handler(e) {
@@ -123,6 +125,30 @@ const Navbar = ({ setIsCartOpen, auth }) => {
         document.addEventListener("mousedown", handler);
         return () => document.removeEventListener("mousedown", handler);
     }, []);
+
+    // 2) Handlers
+    const handleSortChange = e => setSortOption(e.target.value);
+    const handleFilterChange = updated => {
+        setFilters(updated);
+        router.get(
+            '/products',
+            { category: updated.categories, min_price: updated.priceRange[0], max_price: updated.priceRange[1] },
+            { preserveState: true, replace: true }
+        );
+    };
+
+    // 3) Toolbar & sidebar visibility
+    const pathname =
+        typeof window !== 'undefined'
+            ? window.location.pathname.replace(/\/+$/, '')
+            : '/';
+
+// Use these after pathname is defined
+    const isProductDetail = /^\/products\/[^/]+$/.test(pathname); // e.g., /products/shoe-123
+    const isShopAllPage = pathname === '/products';
+
+    const hideLayoutPatterns = [/^\/checkout$/, /^\/products\/\d+\/review/];
+    const shouldHideLayout = hideLayoutPatterns.some(rx => rx.test(pathname));
 
 
     return (
@@ -152,20 +178,20 @@ const Navbar = ({ setIsCartOpen, auth }) => {
                 <div className="hidden md:flex items-center justify-between flex-1">
                     <div className="hidden md:flex space-x-8 absolute left-1/2 transform -translate-x-1/2">
                         <Link href="/" className={`hover:opacity-70 text-lg font-semibold hover:text-blue-500 ${linkTextColor}`}>Home</Link>
-                        <Link href="/products" className={`hover:opacity-70 text-lg font-semibold hover:text-blue-500 ${linkTextColor}`}>SHOP ALL</Link>
+                        <Previewpage linkTextColor={linkTextColor} />
                         <Link href="/about" className={`hover:opacity-70 text-lg font-semibold hover:text-blue-500 ${linkTextColor}`}>About</Link>
                     </div>
 
                     {/* Icons */}
                     <div className="flex ms-auto items-center space-x-8">
-                        <div className="relative">
+                        <div className="relative"  ref={currencyRef}>
                             <button onClick={() => setIsCurrencyOpen(!isCurrencyOpen)} className={`flex items-center hover:opacity-70 ${linkTextColor}`}>
                                 <img src={selectedCurrency.icon} alt={selectedCurrency.country} className="w-4 h-4 mr-2 object-cover" />
                                 <span>{selectedCurrency.code} {selectedCurrency.symbol}</span>
                                 <i className="fas fa-chevron-down ml-1"></i>
                             </button>
                             {isCurrencyOpen && (
-                                <div className="absolute right-0 mt-2 w-68 bg-white shadow-lg z-50 text-black max-h-[360px] overflow-y-auto border border-gray-300">
+                                <div className="absolute right-0 mt-2 w-68 bg-white shadow-lg z-60 text-black max-h-[360px] overflow-y-auto border border-gray-300">
                                     {currencies.map(currency => (
                                         <button key={currency.code} className="flex items-center w-full px-3 py-2 hover:bg-gray-100"
                                                 onClick={() => {
@@ -218,8 +244,15 @@ const Navbar = ({ setIsCartOpen, auth }) => {
                                 </ul>
                             )}
                         </div>
-                        <button onClick={() => setIsCartOpen(true)}><i className={`fas fa-shopping-bag text-xl ${linkTextColor}`}></i></button>
-                        <button onClick={() => setIsSearchOpen(!isSearchOpen)}><i className={`fas fa-search text-xl cursor-pointer ${linkTextColor}`}></i></button>
+                        <button onClick={() => setIsCartOpen(true)} className="relative">
+                            <i className="fas fa-shopping-bag text-xl"></i>
+                            {productCount > 0 && (
+                                <span className="absolute -top-1 -right-2 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                                    {productCount}
+                                </span>
+                            )}
+                        </button>
+
                     </div>
                 </div>
 
@@ -236,7 +269,7 @@ const Navbar = ({ setIsCartOpen, auth }) => {
 
             {/* Mobile Dropdown Menu */}
             {isMenuOpen && (
-                <div ref={menuRef} className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg z-50">
+                <div ref={menuRef} className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg z-60">
                     <div className="p-4 flex flex-col space-y-4 border-t border-gray-200">
                         <Link href="/" className="p-2 hover:bg-gray-100 rounded-md text-gray-700" onClick={() => setIsMenuOpen(false)}>Home</Link>
                         <Link href="/products" className="p-2 hover:bg-gray-100 rounded-md text-gray-700" onClick={() => setIsMenuOpen(false)}>SHOP ALL</Link>
@@ -245,60 +278,33 @@ const Navbar = ({ setIsCartOpen, auth }) => {
                 </div>
             )}
 
-            {/* Search Bar */}
-            {isSearchOpen && (
-                <div ref={searchBarRef} className="w-full bg-white shadow-md p-4 flex flex-col relative z-40 border-t border-gray-300">
-                    <button className="absolute right-4 focus:outline-none cursor-pointer" onClick={() => setIsSearchOpen(false)}>
-                        <i className="fas fa-times text-gray-500"></i>
-                    </button>
-                    <div className="relative w-full">
-                        <i className="fas fa-search text-gray-500 absolute left-2 top-3"></i>
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={handleSearchChange}
-                            placeholder="Search for..."
-                            className="w-full pl-10 pt-2 bg-transparent focus:outline-none"
-                        />
-                    </div>
-                    {(suggestions.length > 0 || products.length > 0) && (
-                        <div className="grid grid-cols-4 gap-8 mt-8 w-full pl-10">
-                            <div className="col-span-1">
-                                <h3 className="font-semibold mb-2 text-gray-700 border-b border-gray-300 pb-2">Suggestions</h3>
-                                <ul className="space-y-2 mt-4">
-                                    {suggestions.map((s, index) => (
-                                        <li key={index} className="hover:underline cursor-pointer text-gray-600">{s}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                            <div className="col-span-3">
-                                <h3 className="font-semibold mb-2 text-gray-700 border-b border-gray-300 pb-2">Products</h3>
-                                <div className="grid grid-cols-4 gap-4 mt-4">
-                                    {products.map((p, index) => (
-                                        <div key={index} className="bg-white border rounded-lg shadow-sm overflow-hidden flex flex-col">
-                                            <img src={p.image} alt={p.name} className="w-full h-48 object-cover" />
-                                            <div className="p-2 flex-1 text-sm">
-                                                <p className="text-gray-800 font-semibold mb-1">{p.name}</p>
-                                                <div className="flex items-center text-yellow-400 text-xs mb-1">
-                                                    {renderStars()} <span className="text-gray-500 ml-1">(12 reviews)</span>
-                                                </div>
-                                                <p className="text-gray-900 font-bold">$99</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
-
             {/* Mobile Bottom Nav */}
             <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-300 flex justify-around items-center py-2 md:hidden z-50 shadow-md">
                 <Link href="/login" className="text-black"><i className="far fa-user text-xl"></i></Link>
-                <button onClick={() => setIsCartOpen(true)} className="text-black"><i className="fas fa-shopping-bag text-xl"></i></button>
-                <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="text-black"><i className="fas fa-search text-xl cursor-pointer"></i></button>
+                <button onClick={() => setIsCartOpen(true)} className="relative text-black">
+                    <i className="fas fa-shopping-bag text-xl"></i>
+                    {productCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-gray-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {productCount}
+                        </span>
+                    )}
+                </button>
             </div>
+
+            {/* Toolbar */}
+            {!shouldHideLayout && isShopAllPage && !isMegaOpen && filterContext && !isProductDetail && (
+                <div className="fixed top-[116px] w-full z-50 border-t border-b border-gray-300">
+                    <ShopToolbar
+                        sortOption={sortOption}
+                        onSortChange={handleSortChange}
+                        onFilterChange={handleFilterChange}
+                        onLayoutChange={setLayout}
+                        categories={categories} // Make sure this is passed from parent
+                        activeCategories={filters.categories}
+                    />
+                </div>
+            )}
+
         </div>
     );
 };

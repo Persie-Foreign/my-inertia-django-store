@@ -20,6 +20,7 @@ function ProductCard({
                          rating = 0,
                          setIsCartOpen,
                          isCartOpen,
+                         category,
                      }) {
     const product = {
         id,
@@ -112,7 +113,13 @@ function ProductCard({
             </Link>
 
             <div className="p-4">
-                <h3 className="text-lg font-bold text-center mb-2">{title}</h3>
+                <Link
+                    href={`/products/${slug}`}
+                    className="block"
+                >
+                    <h3 className="text-lg font-bold mb-2">{title}</h3>
+                </Link>
+                <p className="text-sm text-gray-600">{category?.name}</p>
                 <div className="flex items-center text-sm text-gray-600 mb-2 justify-center">
                     {[...Array(5)].map((_, i) => (
                         <span
@@ -125,7 +132,7 @@ function ProductCard({
                     <span>{reviews_count} Reviews</span>
                 </div>
                 <div className="flex items-baseline justify-center mb-4">
-          <span className="text-xl font-bold">
+          <span className="text-xl font-bold text-red-500">
             {selectedCurrency.symbol}{convertAmount(price).toFixed(2)}
           </span>
                     {original_price && (
@@ -200,7 +207,7 @@ export default function ProductTabs({ isCartOpen, setIsCartOpen }) {
                     <img
                         src={getTabImage(activeTab, activeSubcat)}
                         alt={`${activeSubcat} Model`}
-                        className="w-full h-96 md:h-[48rem] rounded-lg object-cover"
+                        className="w-full h-96 md:h-[50rem] rounded-lg object-cover"
                     />
                 </div>
 

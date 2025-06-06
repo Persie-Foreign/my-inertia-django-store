@@ -914,10 +914,11 @@ const CheckoutSection = () => {
                             <div key={product.id} className="flex items-center py-3">
                                 <div className="w-20 relative">
                                     <img
-                                        src={product.image}
+                                        src={product.image || product.image_url}
                                         alt={product.title}
                                         className="w-full h-20 object-cover border border-gray-300 rounded"
                                     />
+
                                     <span className="absolute top-0 right-0 bg-gray-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center transform translate-x-1/3 -translate-y-1/3">
                         {product.quantity}
                     </span>

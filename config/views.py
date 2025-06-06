@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import redirect
 from django.db.models import Q
 from product.models import Product, Category
+from collections import defaultdict
 
 
 def home(request):
@@ -52,6 +53,11 @@ def home(request):
             'is_new':         p.is_new,
             'is_best':        p.is_best,
             'save_amount':    p.save_amount,
+            'category': {
+                'name': p.category.name,
+                'parent': p.category.parent.name if p.category and p.category.parent else None,
+            } if p.category else None
+
         }
         highlighted_products.append(product_data)
         all_flat_products.append(p)
@@ -88,6 +94,11 @@ def home(request):
                     'is_new':          p.is_new,
                     'is_best':         p.is_best,
                     'save_amount':     p.save_amount,
+                    'category': {
+                        'name': p.category.name,
+                        'parent': p.category.parent.name if p.category and p.category.parent else None,
+                    } if p.category else None
+
                 }
 
                 product_list.append(product_data)
@@ -101,17 +112,27 @@ def home(request):
         all_flat_products.extend(all_products_list)
 
     # 3) Related Products (like product_detail)
-    related_products = []
-    reference = next((p for p in all_flat_products if p and p.category), None)
+    qs = Product.objects.filter(images__isnull=False).distinct().prefetch_related('category__parent', 'images')
 
-    if reference:
-        related_qs = (
-            Product.objects
-            .filter(category=reference.category)
-            .exclude(id=reference.id)
-            .prefetch_related('images')[:5]
-        )
-        related_products = [serialize(prod) for prod in related_qs]
+    related_products = []
+
+    for p in qs:
+        if not p.category:
+            continue
+
+        related_products.append({
+            'id': p.id,
+            'title': p.title,
+            'slug': p.slug,
+            'category': {
+                'name': p.category.name,
+                'parent': p.category.parent.name if p.category.parent else None,
+            },
+            'images': [img.image.url for img in p.images.all()],
+            'price': float(p.price),
+            'original_price': float(p.original_price) if p.original_price else None,
+            'image_url': p.images.first().image.url if p.images.exists() else '',
+        })
 
     return render(request, 'Home', {
         'highlightedProducts': highlighted_products,

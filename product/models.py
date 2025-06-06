@@ -25,6 +25,10 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['title']),
+            models.Index(fields=['category']),
+        ]
 
     def save(self, *args, **kwargs):
         if not self.slug:
