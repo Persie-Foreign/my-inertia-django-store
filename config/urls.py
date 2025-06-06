@@ -16,6 +16,11 @@ urlpatterns = [
     path('dashboard/', user_views.dashboard_page, name='dashboard'),
 
     path('products/', include('product.urls')),
+    path("checkout/", checkout, name="checkout"),
+    path("transactions/", include("transactions.urls", namespace="transactions")),
+
+
+    path("create-checkout-session/", include("transactions.urls")),
     path('api/products/<int:product_id>/submit-review/', submit_review, name='submit_review'),
     path('about/', about , name='about'),
     path('checkout/', checkout, name='checkout'),

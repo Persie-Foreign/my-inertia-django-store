@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     # YOUR custom user app
     'users',
     'product',
+    'transactions',
 
 
     # Sites framework (Allauth needs this)
@@ -100,7 +101,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'storedatabase',
+        'NAME': 'storedatabases',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',
@@ -167,7 +168,8 @@ DEFAULT_FROM_EMAIL = 'DevShop <sedrickottia5@gmail.com>'
 ADMIN_EMAIL = 'sedrickottia4@gmail.com'  # Where new-signup alerts go# (Later swap this out for your Gmail SMTP settings)
 
 
-
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 APPEND_SLASH = True
 
 
