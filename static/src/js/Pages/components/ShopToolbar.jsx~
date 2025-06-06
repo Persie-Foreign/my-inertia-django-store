@@ -1,0 +1,110 @@
+import React, { useState } from 'react';
+import { LayoutGrid, Grip, AlignJustify, X } from 'lucide-react';
+import '../../../css/app.css';
+import Filter from './Filter.jsx';
+import SortDropdown from './SortDropdown.jsx';
+
+export default function ShopToolbar({
+                                        sortOption,
+                                        onSortChange,
+                                        onFilterChange,
+                                        onLayoutChange,
+                                        categories,
+                                        activeCategories
+                                    }) {
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [isSortOpen, setIsSortOpen] = useState(false);
+
+    return (
+        <div className="bg-white w-full h-15">
+            <div className="container mx-auto px-4 py-2 flex justify-between items-center">
+                {/* Grid/List Buttons */}
+                <div className="flex space-x-4 mb-10 border-r-2 border-gray-200 h-13 pe-3 items-center">
+                    <button onClick={() => onLayoutChange("grid-cols-1")} className="text-gray-600 hover:text-gray-900 sm:hidden" title="1-column"><LayoutGrid /></button>
+                    <button onClick={() => onLayoutChange("grid-cols-2")} className="text-gray-600 hover:text-gray-900 sm:hidden" title="2-column"><Grip /></button>
+                    <button onClick={() => onLayoutChange("grid-cols-3")} className="text-gray-600 hover:text-gray-900 hidden sm:flex" title="3-column grid"><LayoutGrid /></button>
+                    <button onClick={() => onLayoutChange("grid-cols-4")} className="text-gray-600 hover:text-gray-900 hidden sm:flex" title="4-column grid"><Grip /></button>
+                    <button onClick={() => onLayoutChange("grid-cols-6")} className="text-gray-600 hover:text-gray-900 hidden sm:flex" title="6-column grid"><AlignJustify /></button>
+                </div>
+
+                {/* Sort */}
+                {/* Sort Button (mobile) */}
+                <div className="sm:hidden mr-4 border-l-2 border-gray-300 h-13 mx-4 mb-10">
+                    <button
+                        className="cursor-pointer text-gray-600 font-semibold px-4 py-2"
+                        onClick={() => setIsSortOpen(true)}
+                    >
+                        Sort
+                    </button>
+                </div>
+
+                {/* SortDropdown (desktop only) */}
+                <div className="hidden sm:block ml-auto mr-4 border-l-2 border-gray-300 h-13 mx-4 mb-10">
+                    <SortDropdown sortOption={sortOption} onSortChange={onSortChange} />
+                </div>
+
+
+                {/* Filter Trigger */}
+                <div className="mr-4 border-l-2 border-gray-300 h-13 mx-4 mb-10">
+                    <button
+                        className="cursor-pointer text-gray-600 font-semibold px-4 py-2"
+                        onClick={() => setIsFilterOpen(true)}
+                    >
+                        Filter
+                    </button>
+                </div>
+            </div>
+
+            {/* Modal Sidebar for Filter */}
+            {isFilterOpen && (
+                <>
+                    {/* Backdrop */}
+                    <div
+                        className="fixed inset-0 bg-black/75 bg-opacity-50"
+                        onClick={() => setIsFilterOpen(false)}
+                    />
+
+                    {/* Sidebar */}
+                    <div className="fixed right-0 top-0 h-full w-80 bg-white shadow-lg z-50 p-6 overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-semibold text-gray-700">Filter</h2>
+                            <button onClick={() => setIsFilterOpen(false)} className="text-gray-500 hover:text-red-600 cursor-pointer">
+                                <X />
+                            </button>
+                        </div>
+                        <Filter
+                            categories={categories}
+                            activeCategories={activeCategories}
+                            onFilterChange={onFilterChange}
+                        />
+                    </div>
+                </>
+            )}
+            {/* Sort Modal Bottom Sheet (mobile) */}
+            {isSortOpen && (
+                <>
+                    {/* Backdrop */}
+                    <div
+                        className="fixed inset-0 bg-black/75 bg-opacity-50 z-40"
+                        onClick={() => setIsSortOpen(false)}
+                    />
+
+                    {/* Bottom Sheet */}
+                    <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-lg z-50 p-4 sm:hidden">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-semibold text-gray-700">Sort By</h2>
+                            <button onClick={() => setIsSortOpen(false)} className="text-gray-500 hover:text-red-600">
+                                <X />
+                            </button>
+                        </div>
+                        <SortDropdown sortOption={sortOption} onSortChange={(value) => {
+                            onSortChange(value);
+                            setIsSortOpen(false); // Close after selecting
+                        }} />
+                    </div>
+                </>
+            )}
+
+        </div>
+    );
+}

@@ -92,7 +92,6 @@ class ReviewMedia(models.Model):
     review      = models.ForeignKey(Review, related_name='media_files', on_delete=models.CASCADE)
     file        = models.FileField(upload_to='review_media/')
     uploaded_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-
     def __str__(self):
         return f"Media for review {self.review.id}"
 

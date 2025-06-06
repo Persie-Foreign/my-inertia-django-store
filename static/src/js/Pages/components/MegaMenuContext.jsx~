@@ -1,0 +1,17 @@
+import React, { createContext, useState, useContext } from 'react';
+
+const MegaMenuContext = createContext();
+
+export function MegaMenuProvider({ children }) {
+    const [megaOpen, setMegaOpen] = useState(false);
+    return (
+        <MegaMenuContext.Provider value={{ megaOpen, setMegaOpen }}>
+            {children}
+        </MegaMenuContext.Provider>
+    );
+}
+
+// convenience hook
+export function useMegaMenu() {
+    return useContext(MegaMenuContext);
+}
