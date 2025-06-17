@@ -22,11 +22,6 @@ def product_list(request):
     """
     qs = Product.objects.filter(images__isnull=False).distinct().prefetch_related('category__parent', 'images', 'reviews')
 
-    # 🔍 Add keyword search
-    search_query = request.GET.get('search')
-    if search_query:
-        qs = qs.filter(title__icontains=search_query)
-
     # 🔥 Filter by multiple ?category=
     category_filter = request.GET.getlist('category')
     if category_filter:
@@ -219,7 +214,9 @@ def submit_review(request, product_id):
         age                = request.POST.get('age', ''),
         skin_type          = request.POST.get('skinType', ''),
         rating             = request.POST.get('rating'),
-        concerns           = concerns_list,
+        concerns           = concerns_list,#
+
+
     )
 
     # Save each uploaded media file

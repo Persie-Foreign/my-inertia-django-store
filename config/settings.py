@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     # YOUR custom user app
     'users',
     'product',
+    'transactions',
 
 
     # Sites framework (Allauth needs this)

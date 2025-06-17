@@ -19,6 +19,9 @@ class ProductAdmin(admin.ModelAdmin):
         'seller',
         'category',
         'price',
+        'stock_quantity',       # NEW: Show stock
+        'average_rating_display',  # NEW: Show average rating
+        'review_count_display',    # NEW: Show review count
         'is_new',
         'is_best',
         'created_at',
@@ -27,12 +30,23 @@ class ProductAdmin(admin.ModelAdmin):
         'category',
         'is_new',
         'is_best',
+        'created_at',
     )
-    search_fields = ('title', 'description')
+    search_fields = ('title', 'description', 'category__name')
     prepopulated_fields = {'slug': ('title',)}
     readonly_fields = ('created_at', 'updated_at')
     date_hierarchy = 'created_at'
     ordering = ('-created_at',)
+
+    @admin.display(description="Avg Rating")
+    def average_rating_display(self, obj):
+        return f"{obj.average_rating:.1f}"
+
+    @admin.display(description="Reviews")
+    def review_count_display(self, obj):
+        return obj.review_count
+
+
 
 
 @admin.register(ProductImage)

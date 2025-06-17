@@ -16,12 +16,6 @@ from django.http import JsonResponse
 from django.db.models import Q
 
 
-def cart_view(request):
-    products = Product.objects.all()[:10]  # or whatever logic you want
-    return render(request, 'CartSection', {
-        'products': list(products.values())  # or serialize them properly
-    })
-
 def product_list(request):
     """
     Renders /products/ grouped by category → parent → children.
@@ -225,7 +219,9 @@ def submit_review(request, product_id):
         age                = request.POST.get('age', ''),
         skin_type          = request.POST.get('skinType', ''),
         rating             = request.POST.get('rating'),
-        concerns           = concerns_list,
+        concerns           = concerns_list,#
+
+
     )
 
     # Save each uploaded media file

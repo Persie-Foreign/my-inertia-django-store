@@ -1,10 +1,22 @@
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
+from django.conf import settings
+from django.db.models import Avg
+
 
 class Category(models.Model):
-    name   = models.CharField(max_length=100)
-    parent = models.ForeignKey('self', null=True, blank=True, related_name='children', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        related_name="children",
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        verbose_name_plural = "Categories"
 
     def __str__(self):
         return self.name
@@ -20,6 +32,7 @@ class Product(models.Model):
     original_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     is_new         = models.BooleanField(default=False)
     is_best        = models.BooleanField(default=False)
+    stock_quantity = models.PositiveIntegerField(default=0)
     created_at     = models.DateTimeField(auto_now_add=True)
     updated_at     = models.DateTimeField(auto_now=True)
 
@@ -41,6 +54,34 @@ class Product(models.Model):
             return float(self.original_price - self.price)
         return None
 
+    @property
+    def average_rating(self):
+        """
+        Returns the average rating (float) across all related Review objects.
+        Returns 0.0 if no reviews exist.
+        """
+        result = self.reviews.aggregate(avg=Avg("rating"))
+        avg = result.get("avg")
+        return float(avg) if avg is not None else 0.0
+
+    @property
+    def review_count(self):
+        """
+        Returns the total number of reviews for this product.
+        """
+        return self.reviews.count()
+
+    @property
+    def total_units_sold(self):
+        """
+        Sums the 'quantity' field of all related Transaction objects.
+        Assumes Transaction model has ForeignKey to Product with related_name='transactions'.
+        """
+        result = self.transactions.aggregate(total=Sum("quantity"))
+        total = result.get("total")
+        return int(total) if total is not None else 0
+
+
     def get_absolute_url(self):
         return reverse('product_detail', kwargs={'slug': self.slug})
 
@@ -53,17 +94,13 @@ class ProductImage(models.Model):
     image   = models.ImageField(upload_to='products/')
     alt     = models.CharField(max_length=200, blank=True)
 
+    class Meta:
+        verbose_name_plural = "Product Images"
+
     def __str__(self):
         return f"{self.product.title} Image"
 
 
-from django.db import models
-from django.conf import settings
-
-# product/models.py
-
-from django.db import models
-from django.conf import settings
 
 class Review(models.Model):
     CONCERN_CHOICES = [
